@@ -1,14 +1,14 @@
 # Computer Graphics 203.3710
 ## Students Team data
 
-Name: 
+Name: Mohammad Wattad
 
-Student Number: 
+Student Number: 206794018
 
 
-Name: 
+Name: Tasneem Mansour
 
-Student Number: 
+Student Number: 319073052
 
 ### Lecturer
 *Roi Poranne*
