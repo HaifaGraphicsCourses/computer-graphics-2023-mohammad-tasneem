@@ -158,7 +158,7 @@ void Renderer::Drawcircle(const glm::ivec2& p1, const float radius, const glm::v
   ![enter image description here](screenshot1.png)
   
  - second run with a=120
- ![enter image description here](screenshot1.PNG)
+ ![enter image description here](screenshot2.png)
 
 
 ===============	DRAWING OF OUR CHOICE  ===============	
