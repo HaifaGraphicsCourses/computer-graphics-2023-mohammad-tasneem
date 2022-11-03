@@ -169,7 +169,7 @@ void Renderer::Drawcircle(const glm::ivec2& p1, const float radius, const glm::v
 {
 	int x1 = p1.x;
 	int y1 = p1.y;
-	int a = 30;	// step size
+	int a = 120;	// step size
 	for (int i = 0; i < a; i++)
 	{
 		int x2 = int(x1 + radius * sin(2 * M_PI * i / a));
