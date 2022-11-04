@@ -85,7 +85,7 @@ void Renderer::DrawLine(const glm::ivec2& p1, const glm::ivec2& p2, const glm::v
 	if (slop == 1 || slop == -1) {
 		while (x1 <= x2) {
 			PutPixel(x1, y1, color);
-			x1 = x1 + 1 * slop;
+			x1 = x1 + 1;
 			y1 = y1 + 1 * slop;
 		}
 	}
@@ -98,15 +98,14 @@ void Renderer::DrawLine(const glm::ivec2& p1, const glm::ivec2& p2, const glm::v
 
 	}
 
-	if (slop<0 && slop>-1) {
-		reflect = true;
-		e = -dx;
-	}
-
 	if (slop < -1) {
 		reflect = true;
 		switch_roles = true;
 		e = -dy;
+	}
+
+	if (slop<0 && slop>-1) {
+		reflect = true;
 	}
 
 	int x = x1, y = y1;
@@ -165,7 +164,7 @@ void Renderer::DrawLine(const glm::ivec2& p1, const glm::ivec2& p2, const glm::v
 }
 
 
-void Renderer::Drawcircle(const glm::ivec2& p1, const float radius, const glm::vec3& color)
+void Renderer::DrawCircle(const glm::ivec2& p1, const float radius, const glm::vec3& color)
 {
 	int x1 = p1.x;
 	int y1 = p1.y;
@@ -174,10 +173,76 @@ void Renderer::Drawcircle(const glm::ivec2& p1, const float radius, const glm::v
 	{
 		int x2 = int(x1 + radius * sin(2 * M_PI * i / a));
 		int y2 = int(y1 + radius * cos(2 * M_PI * i / a));
-		glm::vec2 p2 = glm::vec2(x2, y2);
-		DrawLine(p1, p2, color);
+		DrawLine(p1, glm::vec2(x2, y2), color);
 	}
 	return;
+}
+
+
+void Renderer::DrawCat() {
+	// drawing the cat face using lines
+
+	DrawLine(glm::vec2(400, 460), glm::vec2(700, 460), glm::vec3(0, 0, 1));
+	DrawLine(glm::vec2(400, 160), glm::vec2(700, 160), glm::vec3(0, 0, 1));
+
+	DrawLine(glm::vec2(320, 380), glm::vec2(320, 240), glm::vec3(0, 0, 1));
+	DrawLine(glm::vec2(780, 380), glm::vec2(780, 240), glm::vec3(0, 0, 1));
+
+	DrawLine(glm::vec2(400, 460), glm::vec2(320, 380), glm::vec3(0, 0, 1));
+	DrawLine(glm::vec2(400, 160), glm::vec2(320, 240), glm::vec3(0, 0, 1));
+	DrawLine(glm::vec2(780, 380), glm::vec2(700, 460), glm::vec3(0, 0, 1));
+	DrawLine(glm::vec2(700, 160), glm::vec2(780, 240), glm::vec3(0, 0, 1));
+
+
+	// drawing the cat ears
+	// left ear
+	DrawLine(glm::vec2(370, 560), glm::vec2(450, 460), glm::vec3(0, 0, 1));
+	DrawLine(glm::vec2(370, 560), glm::vec2(370, 430), glm::vec3(0, 0, 1));
+
+	//right ear
+	DrawLine(glm::vec2(730, 560), glm::vec2(650, 460), glm::vec3(0, 0, 1));
+	DrawLine(glm::vec2(730, 560), glm::vec2(730, 430), glm::vec3(0, 0, 1));
+
+	// drawing the cat eyes
+	//left eye
+	DrawCircle(glm::vec2(420, 380), 20, glm::vec3(0, 0, 0));
+
+	//right eye
+	DrawCircle(glm::vec2(680, 380), 20, glm::vec3(0, 0, 0));
+
+	//drawing the cat nose
+	DrawLine(glm::vec2(550, 310), glm::vec2(530, 290), glm::vec3(1, 0, 0));
+	DrawLine(glm::vec2(550, 310), glm::vec2(570, 290), glm::vec3(1, 0, 0));
+	DrawLine(glm::vec2(530, 290), glm::vec2(570, 290), glm::vec3(1, 0, 0));
+
+	//drawing the cat mouth
+	DrawLine(glm::vec2(590, 220), glm::vec2(510, 220), glm::vec3(0, 0, 1));
+	DrawLine(glm::vec2(590, 220), glm::vec2(600, 240), glm::vec3(0, 0, 1));
+	DrawLine(glm::vec2(500, 240), glm::vec2(510, 220), glm::vec3(0, 0, 1));
+
+	//drawing the cat mustaches
+	//left mustache
+	DrawCircle(glm::vec2(440, 280), 5, glm::vec3(0.737255, 0.560784, 0.560784));
+	DrawCircle(glm::vec2(440, 260), 5, glm::vec3(0.737255, 0.560784, 0.560784));
+	DrawCircle(glm::vec2(420, 270), 5, glm::vec3(0.737255, 0.560784, 0.560784));
+
+	DrawLine(glm::vec2(440, 280), glm::vec2(280, 300), glm::vec3(0, 0, 0));
+	DrawLine(glm::vec2(440, 260), glm::vec2(280, 240), glm::vec3(0, 0, 0));
+	DrawLine(glm::vec2(420, 270), glm::vec2(280, 270), glm::vec3(0, 0, 0));
+
+	//right mustache
+	DrawCircle(glm::vec2(680, 280), 5, glm::vec3(0.737255, 0.560784, 0.560784));
+	DrawCircle(glm::vec2(680, 260), 5, glm::vec3(0.737255, 0.560784, 0.560784));
+	DrawCircle(glm::vec2(700, 270), 5, glm::vec3(0.737255, 0.560784, 0.560784));
+
+	DrawLine(glm::vec2(680, 280), glm::vec2(820, 300), glm::vec3(0, 0, 0));
+	DrawLine(glm::vec2(680, 260), glm::vec2(820, 240), glm::vec3(0, 0, 0));
+	DrawLine(glm::vec2(700, 270), glm::vec2(820, 270), glm::vec3(0, 0, 0));
+
+
+
+
+
 }
 
 
@@ -318,7 +383,10 @@ void Renderer::Render(const Scene& scene)
 	int half_width = viewport_width / 2;
 	int half_height = viewport_height / 2;
 	// draw circle
-	Drawcircle(glm::vec2(500, 300), 150, glm::vec3(1, 1, 1));
+	//DrawCircle(glm::vec2(500, 300), 150, glm::vec3(1, 1, 1));
+
+	// draw cat
+	DrawCat();
 
 }
 
