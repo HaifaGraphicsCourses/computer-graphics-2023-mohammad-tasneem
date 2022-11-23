@@ -382,11 +382,14 @@ void Renderer::Render(const Scene& scene)
 	// TODO: Replace this code with real scene rendering code
 	int half_width = viewport_width / 2;
 	int half_height = viewport_height / 2;
+	// for part1
 	// draw circle
 	//DrawCircle(glm::vec2(500, 300), 150, glm::vec3(1, 1, 1));
-
 	// draw cat
-	DrawCat();
+	//DrawCat();
+
+	//for part2
+	
 
 }
 
@@ -399,3 +402,4 @@ int Renderer::GetViewportHeight() const
 {
 	return viewport_height;
 }
+
