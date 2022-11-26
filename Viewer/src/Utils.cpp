@@ -20,6 +20,39 @@ glm::vec2 Utils::Vec2fFromStream(std::istream& issLine)
 	return glm::vec2(x, y);
 }
 
+void Utils::PrintMeshModel(const std::string& filePath)
+{
+	std::ifstream ifile(filePath.c_str());
+
+	// while not end of file
+	while (!ifile.eof())
+	{
+		// get line
+		std::string curLine;
+		std::getline(ifile, curLine);
+
+		// read the type of the line
+		std::istringstream issLine(curLine);
+		std::string lineType;
+
+		issLine >> std::ws >> lineType;
+		std::string str;
+
+		// based on the type parse data
+		if (lineType == "v")
+		{
+			str = issLine.str();
+			std::cout << str << std::endl;
+		}
+		else if (lineType == "f")
+		{
+			str = issLine.str();
+			std::cout << str << std::endl;
+		}
+
+	}
+
+}
 std::shared_ptr<MeshModel> Utils::LoadMeshModel(const std::string& filePath)
 {
 	std::vector<Face> faces;
@@ -104,39 +137,4 @@ std::string Utils::GetFileName(const std::string& filePath)
 	}
 
 	return filePath.substr(index + 1, len - index);
-}
-
-void Utils::PrintMeshModel(const std::string& filePath)
-{
-
-	std::ifstream ifile(filePath.c_str());
-
-	// while not end of file
-	while (!ifile.eof())
-	{
-		// get line
-		std::string curLine;
-		std::getline(ifile, curLine);
-
-		// read the type of the line
-		std::istringstream issLine(curLine);
-		std::string lineType;
-
-		issLine >> std::ws >> lineType;
-		std::string str;
-
-		// based on the type parse data
-		if (lineType == "v")
-		{
-			str = issLine.str();
-			std::cout << str << std::endl;
-		}
-		else if (lineType == "f")
-		{
-			str = issLine.str();
-			std::cout << str << std::endl;
-		}
-
-	}
-
 }

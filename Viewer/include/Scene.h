@@ -6,18 +6,16 @@
 #include "Camera.h"
 #include "MeshModel.h"
 
-using namespace std;
-
 class Scene {
 public:
 	Scene();
 
-	void AddModel(const shared_ptr<MeshModel>& mesh_model);
+	void AddModel(const std::shared_ptr<MeshModel>& mesh_model);
 	int GetModelCount() const;
 	MeshModel& GetModel(int index) const;
 	MeshModel& GetActiveModel() const;
-	
-	void AddCamera(const shared_ptr<Camera>& camera);
+
+	void AddCamera(glm::vec3 eye, glm::vec3 at, glm::vec3 up);
 	int GetCameraCount() const;
 	Camera& GetCamera(int index);
 	Camera& GetActiveCamera();
@@ -27,11 +25,11 @@ public:
 
 	void SetActiveModelIndex(int index);
 	int GetActiveModelIndex() const;
-	
-private:
-	vector<shared_ptr<MeshModel>> mesh_models;
-	vector<shared_ptr<Camera>> cameras;
 
-	int active_camera_index;
-	int active_model_index;
+private:
+	std::vector<std::shared_ptr<MeshModel>> mesh_models_;
+	std::vector<std::shared_ptr<Camera>> cameras_;
+
+	int active_camera_index_;
+	int active_model_index_;
 };
