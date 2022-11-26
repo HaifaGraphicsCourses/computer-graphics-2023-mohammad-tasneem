@@ -46,11 +46,8 @@ public:
 
 	glm::vec3 worldTranslation;
 	glm::vec3 worldRotation;
-	glm::vec3 worldScale;
-	//glm::vec3 worldTranslate;
 	glm::vec3 localTranslation;
 	glm::vec3 localRotation;
-	glm::vec3 localScale;
 	float local_scale;
 	float world_scale;
 

@@ -381,7 +381,8 @@ void DrawImguiMenus(ImGuiIO& io, Scene& scene)
 
 
 
-			ImGui::SliderFloat("scale", (float*)&(scene.GetActiveModel().local_scale), 0.1, 5);
+			ImGui::SliderFloat("scale local", (float*)&(scene.GetActiveModel().local_scale), 0.1, 5);
+			ImGui::SliderFloat("scale world", (float*)&(scene.GetActiveModel().world_scale), 0.1, 5);
 			ImGui::ColorEdit3("Model color", (float*)&(scene.GetActiveModel().color));
 
 		}
