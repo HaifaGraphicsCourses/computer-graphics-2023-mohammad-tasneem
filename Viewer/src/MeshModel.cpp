@@ -6,14 +6,12 @@ MeshModel::MeshModel(std::vector<Face> faces, std::vector<glm::vec3> vertices, s
 	normals_(normals),
 	model_name_(model_name),
 	localRotation(0, 0, 0),
-	localScale(1, 1, 1),
 	localTranslation(2, 1, 1),
 	worldRotation(3, 3, 3),
-	worldScale(1, 1, 1),
 	worldTranslation(0, 0, 0),
 	color(glm::vec3(1, 1, 1)),
 	local_scale(2),
-	world_scale(1)
+	world_scale(0.5)
 {
 
 }
