@@ -12,6 +12,7 @@
 #include "Renderer.h"
 #include "Scene.h"
 #include "Utils.h"
+#include <iostream>
 
 /**
  * Fields
@@ -19,6 +20,7 @@
 bool show_demo_window = false;
 bool show_another_window = false;
 glm::vec4 clear_color = glm::vec4(0.8f, 0.8f, 0.8f, 1.00f);
+int CHOOSEN_FRAME = 0;
 
 /**
  * Function declarations
@@ -40,7 +42,7 @@ void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 	// TODO: Handle mouse scroll here
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
 	int windowWidth = 1280, windowHeight = 720;
 	GLFWwindow* window = SetupGlfwWindow(windowWidth, windowHeight, "Mesh Viewer");
@@ -53,19 +55,20 @@ int main(int argc, char **argv)
 
 	Renderer renderer = Renderer(frameBufferWidth, frameBufferHeight);
 	Scene scene = Scene();
-	
+
+
 	ImGuiIO& io = SetupDearImgui(window);
 	glfwSetScrollCallback(window, ScrollCallback);
-    while (!glfwWindowShouldClose(window))
-    {
-        glfwPollEvents();
+	while (!glfwWindowShouldClose(window))
+	{
+		glfwPollEvents();
 		StartFrame();
 		DrawImguiMenus(io, scene);
 		RenderFrame(window, scene, renderer, io);
-    }
+	}
 
 	Cleanup(window);
-    return 0;
+	return 0;
 }
 
 static void GlfwErrorCallback(int error, const char* description)
@@ -81,16 +84,16 @@ GLFWwindow* SetupGlfwWindow(int w, int h, const char* window_name)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	
-	#if __APPLE__
-		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	#endif
-	
+
+#if __APPLE__
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+
 	GLFWwindow* window = glfwCreateWindow(w, h, window_name, NULL, NULL);
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1); // Enable vsync
-						 // very importent!! initialization of glad
-						 // https://stackoverflow.com/questions/48582444/imgui-with-the-glad-opengl-loader-throws-segmentation-fault-core-dumped
+	// very importent!! initialization of glad
+	// https://stackoverflow.com/questions/48582444/imgui-with-the-glad-opengl-loader-throws-segmentation-fault-core-dumped
 
 	gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 	return window;
@@ -120,7 +123,7 @@ void RenderFrame(GLFWwindow* window, Scene& scene, Renderer& renderer, ImGuiIO& 
 	int frameBufferWidth, frameBufferHeight;
 	glfwMakeContextCurrent(window);
 	glfwGetFramebufferSize(window, &frameBufferWidth, &frameBufferHeight);
-	
+
 	if (frameBufferWidth != renderer.GetViewportWidth() || frameBufferHeight != renderer.GetViewportHeight())
 	{
 		// TODO: Set new aspect ratio
@@ -129,11 +132,99 @@ void RenderFrame(GLFWwindow* window, Scene& scene, Renderer& renderer, ImGuiIO& 
 	if (!io.WantCaptureKeyboard)
 	{
 		// TODO: Handle keyboard events here
-		if (io.KeysDown[65])
+		if (io.KeysDown[85])
 		{
-			// A key is down
+			// U key is down --> UP translation of Y axis
 			// Use the ASCII table for more key codes (https://www.asciitable.com/)
+			if (scene.GetModelCount() > 0)
+			{
+				MeshModel curr_mesh = scene.GetActiveModel();
+				//glm::vec3 temp_vec = curr_mesh.localTranslation;
+				if (CHOOSEN_FRAME == 0) // the user choose local frame
+				{
+					//set changes on Y axis only
+					scene.GetActiveModel().localTranslation[1] += 0.1;
+				}
+				else
+				{
+					//set changes on Y axis only
+					scene.GetActiveModel().worldTranslation[1] += 0.1;
+				}
+
+
+			}
+
 		}
+		if (io.KeysDown[68])
+		{
+			// D key is down --> Down translation of Y axis
+			// Use the ASCII table for more key codes (https://www.asciitable.com/)
+			if (scene.GetModelCount() > 0)
+			{
+				MeshModel curr_mesh = scene.GetActiveModel();
+				//glm::vec3 temp_vec = curr_mesh.localTranslation;
+				if (CHOOSEN_FRAME == 0) // the user choose local frame
+				{
+					//set changes on Y axis only
+					scene.GetActiveModel().localTranslation[1] -= 0.1;
+				}
+				else
+				{
+					//set changes on Y axis only
+					scene.GetActiveModel().worldTranslation[1] -= 0.1;
+				}
+
+
+			}
+
+		}
+		if (io.KeysDown[76])
+		{
+			// L key is down --> Left translation of X axis (gos to left side)
+			// Use the ASCII table for more key codes (https://www.asciitable.com/)
+			if (scene.GetModelCount() > 0)
+			{
+				MeshModel curr_mesh = scene.GetActiveModel();
+				//glm::vec3 temp_vec = curr_mesh.localTranslation;
+				if (CHOOSEN_FRAME == 0) // the user choose local frame
+				{
+					//set changes on Y axis only
+					scene.GetActiveModel().localTranslation[0] -= 0.1;
+				}
+				else
+				{
+					//set changes on Y axis only
+					scene.GetActiveModel().worldTranslation[0] -= 0.1;
+				}
+
+
+			}
+
+		}
+		if (io.KeysDown[82])
+		{
+			// R key is down --> Right translation of X axis (goes to right side)
+			// Use the ASCII table for more key codes (https://www.asciitable.com/)
+			if (scene.GetModelCount() > 0)
+			{
+				MeshModel curr_mesh = scene.GetActiveModel();
+				//glm::vec3 temp_vec = curr_mesh.localTranslation;
+				if (CHOOSEN_FRAME == 0) // the user choose local frame
+				{
+					//set changes on Y axis only
+					scene.GetActiveModel().localTranslation[0] += 0.1;
+				}
+				else
+				{
+					//set changes on Y axis only
+					scene.GetActiveModel().worldTranslation[0] += 0.1;
+				}
+
+
+			}
+
+		}
+
 	}
 
 	if (!io.WantCaptureMouse)
@@ -141,8 +232,27 @@ void RenderFrame(GLFWwindow* window, Scene& scene, Renderer& renderer, ImGuiIO& 
 		// TODO: Handle mouse events here
 		if (io.MouseDown[0])
 		{
-			// Left mouse button is down
+			// Left mouse button is down --> larger size of the model
+			if (scene.GetModelCount() > 0)
+			{
+				MeshModel curr_mesh = scene.GetActiveModel();
+				//glm::vec3 temp_vec = curr_mesh.localTranslation;
+				if (CHOOSEN_FRAME == 0) // the user choose local frame
+				{
+					//set changes on Y axis only
+					scene.GetActiveModel().local_scale += 0.1;
+				}
+				else
+				{
+					//set changes on Y axis only
+					scene.GetActiveModel().world_scale += 0.1;
+				}
+
+
+			}
+
 		}
+
 	}
 
 	renderer.ClearColorBuffer(clear_color);
@@ -170,7 +280,7 @@ void DrawImguiMenus(ImGuiIO& io, Scene& scene)
 	 * MeshViewer menu
 	 */
 	ImGui::Begin("MeshViewer Menu");
-	
+
 	// Menu Bar
 	if (ImGui::BeginMainMenuBar())
 	{
@@ -203,36 +313,80 @@ void DrawImguiMenus(ImGuiIO& io, Scene& scene)
 
 	// Controls
 	ImGui::ColorEdit3("Clear Color", (float*)&clear_color);
+
+
+
 	// TODO: Add more controls as needed
-	
+
 	ImGui::End();
 
 	/**
 	 * Imgui demo - you can remove it once you are familiar with imgui
 	 */
-	
-	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
+
+	 // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
 	if (show_demo_window)
 		ImGui::ShowDemoWindow(&show_demo_window);
 
 	// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
 	{
+
 		static float f = 0.0f;
 		static int counter = 0;
-
 		ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-		ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-		ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-		ImGui::Checkbox("Another Window", &show_another_window);
-
-		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-		ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-		if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-			counter++;
-		ImGui::SameLine();
 		ImGui::Text("counter = %d", counter);
+		if (scene.GetModelCount())
+		{
+			// world local tranformation selction
+			const char* frames[] = { "local", "world" };
+			/*static const char* current_item = items[0];*/
+			if (ImGui::Combo("choose frame to control with mouse", &CHOOSEN_FRAME, frames, 2))
+			{
+				if (scene.GetModelCount() > 0 && CHOOSEN_FRAME == 0)
+				{
+					scene.GetActiveModel().SetWorldLocal(0);
+				}
+				else if (scene.GetModelCount() > 0)
+				{
+					scene.GetActiveModel().SetWorldLocal(1);
+				}
+			}
+		}
+		{//model selction
+			if (scene.GetModelCount() > 1)
+			{
+				static int sliderint = 1;
+				ImGui::SliderInt("Select model id", &sliderint, 1, scene.GetModelCount());
+				scene.SetActiveModelIndex(sliderint - 1);
+			}
+
+		}
+
+		if (scene.GetModelCount() > 0)
+		{
+			ImGui::SliderFloat("local X  Rotation", (float*)&(scene.GetActiveModel().localRotation[0]), -180.0f, 180.0f);
+			ImGui::SliderFloat("local Y  Rotation", (float*)&(scene.GetActiveModel().localRotation[1]), -180.0f, 180.0f);
+			ImGui::SliderFloat("local Z  Rotation", (float*)&(scene.GetActiveModel().localRotation[2]), -180.0f, 180.0f);
+			ImGui::SliderFloat("local X  translation", (float*)&(scene.GetActiveModel().localTranslation[0]), -1.5, 3);
+			ImGui::SliderFloat("local Y  translation", (float*)&(scene.GetActiveModel().localTranslation[1]), -1.5, 3);
+			ImGui::SliderFloat("local Z  translation", (float*)&(scene.GetActiveModel().localTranslation[2]), -1.5, 3);
+			ImGui::SliderFloat("world X  rotation", (float*)&(scene.GetActiveModel().worldRotation[0]), -180.0f, 180.0f);
+			ImGui::SliderFloat("world Y  rotation", (float*)&(scene.GetActiveModel().worldRotation[1]), -180.0f, 180.0f);
+			ImGui::SliderFloat("world Z  rotation", (float*)&(scene.GetActiveModel().worldRotation[2]), -180.0f, 180.0f);
+			ImGui::SliderFloat("world X  translation", (float*)&(scene.GetActiveModel().worldTranslation[0]), -1.5, 3);
+			ImGui::SliderFloat("world Y  translation", (float*)&(scene.GetActiveModel().worldTranslation[1]), -1.5, 3);
+			ImGui::SliderFloat("world Z  translation", (float*)&(scene.GetActiveModel().worldTranslation[2]), -1.5, 3);
+
+
+
+
+
+			ImGui::SliderFloat("scale", (float*)&(scene.GetActiveModel().local_scale), 0.1, 5);
+			ImGui::ColorEdit3("Model color", (float*)&(scene.GetActiveModel().color));
+
+		}
+
+
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::End();
