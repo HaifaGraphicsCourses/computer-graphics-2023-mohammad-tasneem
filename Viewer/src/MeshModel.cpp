@@ -12,10 +12,9 @@ MeshModel::MeshModel(std::vector<Face> faces, std::vector<glm::vec3> vertices, s
 	worldScale(1, 1, 1),
 	worldTranslation(0, 0, 0),
 	color(glm::vec3(1, 1, 1)),
-	local_scale(1),
+	local_scale(2),
 	world_scale(1)
 {
-	scaleLoadedMeshModel(); // gives the model good scale , so that it becomes more visible
 
 }
 
