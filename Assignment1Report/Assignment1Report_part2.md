@@ -820,6 +820,27 @@ shown in image Assignment1_question3
 === 5 ===
 shown in videos called "translation_compare" & "scaling_compare" & "rotaions_compare"
 
+translation:
+
+https://user-images.githubusercontent.com/82311533/204128235-26dd71d5-b000-4834-a9be-cf087022694c.mp4
+
+
+scaling:
+
+https://user-images.githubusercontent.com/82311533/204128245-e5591dcb-a8ec-441c-9d19-a6375d1de0d1.mp4
+
+rotaions:
+
+
+https://user-images.githubusercontent.com/82311533/204128312-ed5dbf4a-7d19-4a50-83e9-e190c4a6b95d.mp4
+
+
+
+
+
+
+
+
 === 6 ===
 shown in image "Assignment1_question6" 
 ![enter image description here](Assignment1_question6.png)
