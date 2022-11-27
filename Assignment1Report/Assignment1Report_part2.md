@@ -853,4 +853,7 @@ we use two diffrent ways to changes the slider values,
         D-translate Down
         L-translate to Left
         R- translate to Right
+        Mouse (left click) = scaling
+
+Note : if the user want to scale/translate in local frame or world frame ... He should choose this option in the gui
 
