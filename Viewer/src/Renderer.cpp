@@ -16,6 +16,115 @@ Renderer::Renderer(int viewport_width, int viewport_height) :
 	InitOpenGLRendering();
 	CreateBuffers(viewport_width, viewport_height);
 }
+void Renderer::DrawLine2(const glm::ivec2& p1, const glm::ivec2& p2, const glm::vec3& color)
+{
+	bool switch_flag = false, reflect_flag = false;
+	//-------------------------------------
+	int x1 = p1.x, x2 = p2.x, y1 = p1.y, y2 = p2.y;
+	if (x1 == x2)//straight line case 
+	{
+		while (y1 != y2)
+		{
+			PutPixel(x1, y1, color);
+			if (y1 > y2)
+			{
+				y1 -= 1;
+			}
+			else
+			{
+				y1 += 1;
+			}
+		}
+		return;
+	}
+	if (x1 > x2)//we need to swap the cordinates of the starting pint and the ending point of the line
+	{
+		//swaping the x coordinates
+		int temp = x1;
+		x1 = x2;
+		x2 = temp;
+		//------------------------
+		//swaping the y coordinates
+		temp = y1;
+		y1 = y2;
+		y2 = temp;
+	}
+	float dy = y2 - y1, dx = x2 - x1;
+	float slope = dy / dx;
+	int e = -dx;
+	if (slope > 1) {
+		switch_flag = true;
+		e = -dy;
+	}
+	if (0 > slope && slope >= -1) {
+		reflect_flag = true;
+		e = -dx;
+	}
+	if (slope < -1)
+	{
+		reflect_flag = true;
+		switch_flag = true;
+		e = dy;
+	}
+	int x = x1, y = y1, goal = x2;
+	if (switch_flag)
+	{
+		while (y <= y2 && !reflect_flag || reflect_flag && y >= y2)
+		{
+			if (e > 0)
+			{
+				if (reflect_flag) {//m<-1
+					x = x + 1;
+					e = e + 2 * dy;
+				}
+				else if (reflect_flag == false)//m>1
+				{
+					x = x + 1;
+					e = e - 2 * dy;
+				}
+			}
+			PutPixel(x, y, color);
+			if (reflect_flag) {//m<-1
+				y = y - 1;
+				e = e + 2 * dx;
+			}
+			else//m>1
+			{
+				y = y + 1;
+				e = e + 2 * dx;
+			}
+		}
+	}
+	else
+	{
+		while (x <= x2)
+		{
+			if (e > 0)
+			{
+				if (reflect_flag) {//-1<m<0
+					y = y - 1;
+					e = e - 2 * dx;
+				}
+				else//0<m<1
+				{
+					y = y + 1;
+					e = e - 2 * dx;
+				}
+			}
+			PutPixel(x, y, color);
+			if (reflect_flag) {//-1<m<0
+				x = x + 1;
+				e = e - 2 * dy;
+			}
+			else//0<m<1
+			{
+				x = x + 1;
+				e = e + 2 * dy;
+			}
+		}
+	}
+}
+
 
 Renderer::~Renderer()
 {
@@ -166,27 +275,67 @@ void Renderer::ClearColorBuffer(const glm::vec3& color)
 
 void Renderer::Render(Scene& scene)
 {
-
-	// TODO: Replace this code with real scene rendering code
 	int half_width = viewport_width_ / 2;
 	int half_height = viewport_height_ / 2;
-
+	DrawWorldAxis(scene, half_width, half_height);
 	if (scene.GetModelCount() > 0)
 	{
-		// to supports multi model view
+
 		int modles_num = scene.GetModelCount();
 		for (int i = 0; i < modles_num; i++)
 		{
 			MeshModel curr_mesh = scene.GetModel(i);
-			DrawMeshModel(curr_mesh, curr_mesh.GetTranformationMat());
-
+			//DrawMeshModel(curr_mesh,curr_mesh.GetTranformationMat(),  scene);
+			DrawMesh(curr_mesh, curr_mesh.GetVerticesList(), curr_mesh.GetFacesList(), scene, half_width, half_height);
 		}
 
 		MeshModel curr_mesh = scene.GetActiveModel();
-		DrawMeshModel(curr_mesh, curr_mesh.GetTranformationMat());
+		//DrawMeshModel(curr_mesh, curr_mesh.GetTranformationMat(), scene);
+		DrawMesh(curr_mesh, curr_mesh.GetVerticesList(), curr_mesh.GetFacesList(), scene, half_width, half_height);
+	}
+	if (scene.GetDrawCamera() == true)
+	{
+		Scene scene1 = scene;
+		for (int i = 0; i < scene.GetCameraCount(); i++)
+		{
+			MeshModel& camera_ver = *(scene.camera_model);
+			Camera& currCamera = scene1.GetCamera(i);
+			Camera& activeCamera = scene1.GetActiveCamera();
+			std::vector<glm::vec3> camera_vertices = camera_ver.GetVerticesList();
+			glm::mat4x4 trans = activeCamera.GetViewTransformation();
+
+			if (i != scene.GetActiveCameraIndex())
+			{
+				for (int j = 0; j < camera_ver.GetFacesCount(); j++) {
+
+					const Face& model_face = camera_ver.GetFace(j);
+					glm::vec3 u0 = camera_vertices[model_face.GetVertexIndex(0) - 1];
+					glm::vec3 u1 = camera_vertices[model_face.GetVertexIndex(1) - 1];
+					glm::vec3 u2 = camera_vertices[model_face.GetVertexIndex(2) - 1];
+					u0 *= 200;
+					u1 *= 200;
+					u2 *= 200;
+					glm::vec4 v0 = trans * glm::vec4(u0, 1);
+					glm::vec4 v1 = trans * glm::vec4(u1, 1);
+					glm::vec4 v2 = trans * glm::vec4(u2, 1);
+					v0 /= v0.w ? v0.w : 1;
+					v1 /= v1.w ? v1.w : 1;
+					v2 /= v2.w ? v2.w : 1;
+					v0.x += viewport_width_ / 2;
+					v1.x += viewport_width_ / 2;
+					v2.x += viewport_width_ / 2;
+					v0.y += viewport_height_ / 2;
+					v1.y += viewport_height_ / 2;
+					v2.y += viewport_height_ / 2;
+					DrawLine2(v0, v1, glm::vec3(0, 0, 0));
+					DrawLine2(v0, v2, glm::vec3(0, 0, 0));
+					DrawLine2(v2, v1, glm::vec3(0, 0, 0));
+
+				}
+			}
+		}
 
 	}
-
 }
 
 
@@ -200,7 +349,7 @@ int Renderer::GetViewportHeight() const
 	return viewport_height_;
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void Renderer::DrawMeshModel(MeshModel& model, glm::mat4x4 transformation)
+void Renderer::DrawMeshModel(MeshModel& model, glm::mat4x4 transformation, Scene& scene)
 {
 	for (int i = 0; i < model.GetFacesCount(); ++i)
 	{
@@ -221,8 +370,11 @@ void Renderer::DrawMeshModel(MeshModel& model, glm::mat4x4 transformation)
 		DrawLine(p1, p2, model.color);
 		DrawLine(p2, p3, model.color);
 		DrawLine(p1, p3, model.color);
+		
+	}
 
-
+	if (model.GetBoundedBox()) {
+		DrawBoundingBox(model);
 	}
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -344,3 +496,153 @@ void Renderer::DrawLineBresenham(int x1, int y1, int x2, int y2, const glm::vec3
 	}
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+void Renderer::DrawBoundingBox(MeshModel& model)
+{
+	glm::mat4x4 transformation = model.GetTranformationMat();
+	std::vector<glm::vec3> PB;
+	for (int i = 0; i < 8; ++i)
+	{
+		glm::vec4 ve = transformation * glm::vec4(model.boundingBoxPoints[i], 1);
+		ve = ve / ve[3];
+		PB.push_back(glm::vec3(ve[0], ve[1], ve[2]));
+	}
+
+	DrawLine(PB[0], PB[1], model.color_b);
+	DrawLine(PB[0], PB[2], model.color_b);
+	DrawLine(PB[0], PB[4], model.color_b);
+	DrawLine(PB[1], PB[3], model.color_b);
+	DrawLine(PB[1], PB[5], model.color_b);
+	DrawLine(PB[2], PB[3], model.color_b);
+	DrawLine(PB[2], PB[6], model.color_b);
+	DrawLine(PB[3], PB[7], model.color_b);
+	DrawLine(PB[4], PB[5], model.color_b);
+	DrawLine(PB[4], PB[6], model.color_b);
+	DrawLine(PB[5], PB[7], model.color_b);
+	DrawLine(PB[6], PB[7], model.color_b);
+
+}
+void Renderer::DrawVertexNormals(MeshModel mesh, Scene scene, int width, int height) {
+	int face_count = mesh.GetFacesCount();
+	glm::vec3 p1, p2, p3;
+	glm::mat4 transformation = mesh.GetTranformationMat();
+	glm::mat4x4 camera_transform = scene.GetActiveCamera().GetViewTransformation();
+	glm::mat4x4 worldaxesmodel_transform = camera_transform * mesh.GetTranslateMatwor() * mesh.GetRotatexMatwor() * mesh.GetRotateyMatwor() * mesh.GetRotatezMatwor() * mesh.world_scale_mat * mesh.GetTranslateMatLoc() * mesh.GetScaleMatLoc();
+	transformation = camera_transform * transformation;
+
+	for (int i = 0; i < face_count; i++) {
+
+		Face face = mesh.GetFace(i);
+		p1 = mesh.GetVertex(face.GetVertexIndex(0) - 1);
+		p2 = mesh.GetVertex(face.GetVertexIndex(1) - 1);
+		p3 = mesh.GetVertex(face.GetVertexIndex(2) - 1);
+		glm::vec4 temp_vec = glm::vec4(p1, 1);
+		temp_vec = transformation * temp_vec;
+		p1.x = temp_vec.x / temp_vec.w;
+		p1.y = temp_vec.y / temp_vec.w;
+		p1.z = temp_vec.z / temp_vec.w;
+		temp_vec = glm::vec4(p2, 1);
+		temp_vec = transformation * temp_vec;
+		p2.x = temp_vec.x / temp_vec.w;
+		p2.y = temp_vec.y / temp_vec.w;
+		p2.z = temp_vec.z / temp_vec.w;
+		temp_vec = glm::vec4(p3, 1);
+		temp_vec = transformation * temp_vec;
+		p3.x = temp_vec.x / temp_vec.w;
+		p3.y = temp_vec.y / temp_vec.w;
+		p3.z = temp_vec.z / 1;
+		p1.x = (p1.x + 1) * width;
+		p1.y = (p1.y + 1) * height;
+		p2.x = (p2.x + 1) * width;;
+		p2.y = (p2.y + 1) * height;
+		p3.x = (p3.x + 1) * width;;
+		p3.y = (p3.y + 1) * height;
+
+		glm::vec3 p1_normal = mesh.GetNormal(face.GetNormalIndex(0) - 1);
+		glm::vec3 p2_normal = mesh.GetNormal(face.GetNormalIndex(1) - 1);
+		glm::vec3 p3_normal = mesh.GetNormal(face.GetNormalIndex(2) - 1);
+		p1_normal *= 69;
+		p2_normal *= 69;
+		p3_normal *= 69;
+		DrawLine2(glm::vec2(p1.x, p1.y), glm::vec2(p1.x + p1_normal.x, p1.y + p1_normal.y), glm::vec3(0, 1, 1));
+		DrawLine2(glm::vec2(p2.x, p2.y), glm::vec2(p2.x + p2_normal.x, p2.y + p2_normal.y), glm::vec3(0, 1, 1));
+		DrawLine2(glm::vec2(p3.x, p3.y), glm::vec2(p3.x + p3_normal.x, p3.y + p3_normal.y), glm::vec3(0, 1, 1));
+	}
+}
+void Renderer::DrawFacesNormals(MeshModel mesh, Scene scene, int width, int height) {
+	int face_count = mesh.GetFacesCount();
+	glm::vec3 p1, p2, p3;
+	glm::mat4 transformation = mesh.GetTranformationMat();
+	glm::mat4x4 camera_transform = scene.GetActiveCamera().GetViewTransformation();
+	glm::mat4x4 worldaxesmodel_transform = camera_transform * mesh.GetTranslateMatwor() * mesh.GetRotatexMatwor() * mesh.GetRotateyMatwor() * mesh.GetRotatezMatwor() * mesh.world_scale_mat * mesh.GetTranslateMatLoc() * mesh.GetScaleMatLoc();
+	transformation = camera_transform * transformation;
+
+	for (int i = 0; i < face_count; i++) {
+
+		Face face = mesh.GetFace(i);
+		p1 = mesh.GetVertex(face.GetVertexIndex(0) - 1);
+		p2 = mesh.GetVertex(face.GetVertexIndex(1) - 1);
+		p3 = mesh.GetVertex(face.GetVertexIndex(2) - 1);
+		glm::vec4 temp_vec = glm::vec4(p1, 1);
+		temp_vec = transformation * temp_vec;
+		p1.x = temp_vec.x / temp_vec.w;
+		p1.y = temp_vec.y / temp_vec.w;
+		p1.z = temp_vec.z / temp_vec.w;
+		temp_vec = glm::vec4(p2, 1);
+		temp_vec = transformation * temp_vec;
+		p2.x = temp_vec.x / temp_vec.w;
+		p2.y = temp_vec.y / temp_vec.w;
+		p2.z = temp_vec.z / temp_vec.w;
+		temp_vec = glm::vec4(p3, 1);
+		temp_vec = transformation * temp_vec;
+		p3.x = temp_vec.x / temp_vec.w;
+		p3.y = temp_vec.y / temp_vec.w;
+		p3.z = temp_vec.z / 1;
+		p1.x = (p1.x + 1) * width;
+		p1.y = (p1.y + 1) * height;
+		p2.x = (p2.x + 1) * width;;
+		p2.y = (p2.y + 1) * height;
+		p3.x = (p3.x + 1) * width;;
+		p3.y = (p3.y + 1) * height;
+
+		glm::vec3 edge1 = p2 - p1;
+		glm::vec3 edge2 = p3 - p1;
+		glm::vec3 face_normal = glm::cross(edge1, edge2);
+		face_normal = glm::normalize(face_normal);
+		face_normal *= 69;
+		glm::vec3 center = p1 + p2 + p3;
+		center /= 3;
+		DrawLine2(glm::vec2(center), glm::vec2(face_normal.x + p1.x, face_normal.y + p1.y), glm::vec3(0, 0, 1));
+
+	}
+}
+void Renderer::DrawWorldAxis(Scene scene, int width, int height)
+{
+	glm::vec3 origin = glm::vec3(0, 0, 0);
+	glm::vec3 x_axis = glm::vec3(width, 0, 0.0f);
+	glm::vec3 y_axis = glm::vec3(0, height, 0.0f);
+	glm::vec3 z_axis = glm::vec3(0, 0, 300);
+	glm::mat4x4 camera_transform = scene.GetActiveCamera().GetViewTransformation();
+	glm::vec4 temp_vec = glm::vec4(origin, 1);
+	temp_vec = camera_transform * temp_vec;
+	origin = temp_vec;
+	temp_vec = glm::vec4(x_axis, 1);
+	temp_vec = camera_transform * temp_vec;
+	x_axis = temp_vec;
+	temp_vec = glm::vec4(y_axis, 1);
+	temp_vec = camera_transform * temp_vec;
+	y_axis = temp_vec;
+	temp_vec = glm::vec4(z_axis, 1);
+	temp_vec = camera_transform * temp_vec;
+	z_axis = temp_vec;
+	origin.x = (origin.x + 1) * width;
+	origin.y = (origin.y + 1) * height;
+	x_axis.x = (x_axis.x + 1) * width;
+	x_axis.y = (x_axis.y + 1) * height;
+	y_axis.x = (y_axis.x + 1) * width;
+	y_axis.y = (y_axis.y + 1) * height;
+	z_axis.x = (z_axis.x + 1) * width;
+	z_axis.y = (z_axis.y + 1) * height;
+	DrawLine2(origin, x_axis, glm::vec3(1, 0, 0));
+	DrawLine2(origin, y_axis, glm::vec3(0, 1, 0));
+	DrawLine2(origin, z_axis, glm::vec3(0, 0, 1));
+}
