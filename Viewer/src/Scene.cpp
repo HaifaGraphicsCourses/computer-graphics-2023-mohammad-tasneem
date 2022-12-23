@@ -36,8 +36,15 @@ void Scene::AddCamera(glm::vec3 eye, glm::vec3 at, glm::vec3 up)
 	std::shared_ptr<MeshModel>& model = Utils::LoadMeshModel(path);
 
 	int id = cameras_.size();
+	std::shared_ptr<Camera>  camera = std::make_shared<Camera>(eye, at, up, model, id, 1280 / 640);
+	cameras_.push_back(camera);
 
 }
+void Scene::AddCameranew(const std::shared_ptr<Camera>& camera)
+{
+	cameras_.push_back(camera);
+}
+
 
 int Scene::GetCameraCount() const
 {
@@ -72,4 +79,17 @@ void Scene::SetActiveModelIndex(int index)
 int Scene::GetActiveModelIndex() const
 {
 	return active_model_index_;
+}
+
+void Scene::SetDrawCamera(bool flag)
+{
+	this->draw_camera = flag;
+}
+bool Scene::GetDrawCamera() const
+{
+	return this->draw_camera;
+}
+MeshModel& Scene::GetCameraMesh() const
+{
+	return *this->camera_model;
 }
