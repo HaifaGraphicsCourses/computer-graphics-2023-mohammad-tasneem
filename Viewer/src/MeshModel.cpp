@@ -320,7 +320,7 @@ const glm::mat4 MeshModel::GetRotatexMatwor()const
 {
 	return this->world_X_rotation_mat;
 }
-
+/*
 void MeshModel::setNormals()
 {
 	int i = 0;
@@ -357,4 +357,4 @@ void MeshModel::setNormals()
 	}
 	return;
 
-}
+} */

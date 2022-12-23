@@ -113,9 +113,9 @@ public:
 	bool bounding_box = false;
 	bool show_face_normals = false;
 	bool show_vertex_normals = false;
-	void setNormals();
-	std::vector<glm::vec3> verticesNormals;
-	std::vector<glm::vec3> FacesNormals;
-	std::vector<int> facesPerVertex;
+	//void setNormals();
+	////std::vector<glm::vec3> verticesNormals;
+	//std::vector<glm::vec3> FacesNormals;
+	//std::vector<int> facesPerVertex;
 
 };

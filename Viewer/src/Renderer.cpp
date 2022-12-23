@@ -277,7 +277,7 @@ void Renderer::Render(Scene& scene)
 {
 	int half_width = viewport_width_ / 2;
 	int half_height = viewport_height_ / 2;
-	DrawWorldAxis(scene, half_width, half_height);
+	//DrawWorldAxis(scene, half_width, half_height);
 	if (scene.GetModelCount() > 0)
 	{
 
@@ -615,6 +615,131 @@ void Renderer::DrawFacesNormals(MeshModel mesh, Scene scene, int width, int heig
 
 	}
 }
+void Renderer::DrawMesh(MeshModel mesh, std::vector<glm::vec3> vertices, std::vector<Face> faces, Scene scene, int width, int height)
+{
+	int face_count = faces.size();
+	glm::vec3 p1, p2, p3;
+	glm::mat4 T_mat = mesh.GetTranformationMat();
+	glm::mat4x4 camera_transform = scene.GetActiveCamera().GetViewTransformation();
+	glm::mat4x4 worldaxesmodel_transform = camera_transform * mesh.GetTranslateMatwor() * mesh.GetRotatexMatwor() * mesh.GetRotateyMatwor() * mesh.GetRotatezMatwor() * mesh.world_scale_mat * mesh.GetTranslateMatLoc() * mesh.GetScaleMatLoc();
+	T_mat = camera_transform * T_mat;
+	for (int i = 0; i < face_count; i++)
+	{
+		Face face = faces[i];
+		p1 = vertices[face.GetVertexIndex(0) - 1];
+		p2 = vertices[face.GetVertexIndex(1) - 1];
+		p3 = vertices[face.GetVertexIndex(2) - 1];
+		glm::vec4 temp_vec = glm::vec4(p1, 1);
+		temp_vec = T_mat * temp_vec;
+		p1.x = temp_vec.x / temp_vec.w;
+		p1.y = temp_vec.y / temp_vec.w;
+		p1.z = temp_vec.z / temp_vec.w;
+		temp_vec = glm::vec4(p2, 1);
+		temp_vec = T_mat * temp_vec;
+		p2.x = temp_vec.x / temp_vec.w;
+		p2.y = temp_vec.y / temp_vec.w;
+		p2.z = temp_vec.z / temp_vec.w;
+		temp_vec = glm::vec4(p3, 1);
+		temp_vec = T_mat * temp_vec;
+		p3.x = temp_vec.x / temp_vec.w;
+		p3.y = temp_vec.y / temp_vec.w;
+		p3.z = temp_vec.z / 1;
+		p1.x = (p1.x + 1) * width;
+		p1.y = (p1.y + 1) * height;
+		p2.x = (p2.x + 1) * width;;
+		p2.y = (p2.y + 1) * height;
+		p3.x = (p3.x + 1) * width;;
+		p3.y = (p3.y + 1) * height;
+		DrawLine2(glm::vec2(p1.x, p1.y), glm::vec2(p2.x, p2.y), glm::vec3(0, 0, 0));
+		DrawLine2(glm::vec2(p1.x, p1.y), glm::vec2(p3.x, p3.y), glm::vec3(0, 0, 0));
+		DrawLine2(glm::vec2(p2.x, p2.y), glm::vec2(p3.x, p3.y), glm::vec3(0, 0, 0));
+		if (mesh.GetShowFaceNormals() == true)
+		{
+			glm::vec3 edge1 = p2 - p1;
+			glm::vec3 edge2 = p3 - p1;
+			glm::vec3 face_normal = glm::cross(edge1, edge2);
+			face_normal = glm::normalize(face_normal);
+			face_normal *= 69;
+			glm::vec3 center = p1 + p2 + p3;
+			center /= 3;
+			DrawLine2(glm::vec2(center), glm::vec2(face_normal.x + p1.x, face_normal.y + p1.y), glm::vec3(0, 0, 1));
+		}
+		if (mesh.GetShowVertexNormals() == true)
+		{
+			glm::vec3 p1_normal = mesh.GetNormal(face.GetNormalIndex(0) - 1);
+			glm::vec3 p2_normal = mesh.GetNormal(face.GetNormalIndex(1) - 1);
+			glm::vec3 p3_normal = mesh.GetNormal(face.GetNormalIndex(2) - 1);
+			p1_normal *= 69;
+			p2_normal *= 69;
+			p3_normal *= 69;
+			DrawLine2(glm::vec2(p1.x, p1.y), glm::vec2(p1.x + p1_normal.x, p1.y + p1_normal.y), glm::vec3(0, 1, 1));
+			DrawLine2(glm::vec2(p2.x, p2.y), glm::vec2(p2.x + p2_normal.x, p2.y + p2_normal.y), glm::vec3(0, 1, 1));
+			DrawLine2(glm::vec2(p3.x, p3.y), glm::vec2(p3.x + p3_normal.x, p3.y + p3_normal.y), glm::vec3(0, 1, 1));
+		}
+		if (mesh.GetShowAxis() == true)
+		{
+
+			glm::vec3 px_max = glm::vec3(mesh.max_x, (mesh.max_y + mesh.min_y) / 2, (mesh.max_z + mesh.min_z) / 2);
+			glm::vec3 py_max = glm::vec3((mesh.max_x + mesh.min_x) / 2, mesh.max_y, (mesh.max_z + mesh.min_z) / 2);
+			glm::vec3 pz_max = glm::vec3((mesh.max_x + mesh.min_x) / 2, (mesh.max_y + mesh.min_y) / 2, mesh.max_z);
+			glm::vec3 center = glm::vec3((mesh.max_x + mesh.min_x) / 2, (mesh.max_y + mesh.min_y) / 2, (mesh.max_z + mesh.min_z) / 2);
+			if (mesh.GetWorldLocal() == false)
+			{
+				//----------------------------------------
+				glm::vec4 temp_vec = glm::vec4(px_max, 1);
+				temp_vec = T_mat * temp_vec;
+				px_max = temp_vec;
+				//--------------------------------
+				temp_vec = glm::vec4(py_max, 1);
+				temp_vec = T_mat * temp_vec;
+				py_max = temp_vec;
+				//-------------------------------------
+				temp_vec = glm::vec4(pz_max, 1);
+				temp_vec = T_mat * temp_vec;
+				pz_max = temp_vec;
+				//-------------------------------------------
+				temp_vec = glm::vec4(center, 1);
+				temp_vec = T_mat * temp_vec;
+				center = temp_vec;
+				//--------------------------
+			}
+			else
+			{
+				glm::vec4 temp_vec = glm::vec4(px_max, 1);
+				temp_vec = worldaxesmodel_transform * temp_vec;
+				px_max = temp_vec;
+				//--------------------------------
+				temp_vec = glm::vec4(py_max, 1);
+				temp_vec = worldaxesmodel_transform * temp_vec;
+				py_max = temp_vec;
+				//-------------------------------------
+				temp_vec = glm::vec4(pz_max, 1);
+				temp_vec = worldaxesmodel_transform * temp_vec;
+				pz_max = temp_vec;
+				//-------------------------------------------
+				temp_vec = glm::vec4(center, 1);
+				temp_vec = worldaxesmodel_transform * temp_vec;
+				center = temp_vec;
+				//--------------------------
+			}
+			px_max.x = (px_max.x + 1) * width;
+			px_max.y = (px_max.y + 1) * height;
+			py_max.x = (py_max.x + 1) * width;;
+			py_max.y = (py_max.y + 1) * height;
+			pz_max.x = (pz_max.x + 1) * width;;
+			pz_max.y = (pz_max.y + 1) * height;
+			center.x = (center.x + 1) * width;;
+			center.y = (center.y + 1) * height;
+
+			DrawLine2(glm::vec2(px_max.x, px_max.y), center, glm::vec3(1, 0, 0));
+			DrawLine2(glm::vec2(py_max.x, py_max.y), center, glm::vec3(0, 1, 0));
+			DrawLine2(glm::vec2(pz_max.x, pz_max.y), center, glm::vec3(0, 0, 1));
+
+		}
+		
+	}
+}
+
 void Renderer::DrawWorldAxis(Scene scene, int width, int height)
 {
 	glm::vec3 origin = glm::vec3(0, 0, 0);
