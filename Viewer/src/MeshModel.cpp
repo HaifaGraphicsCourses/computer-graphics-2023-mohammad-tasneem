@@ -358,3 +358,7 @@ void MeshModel::setNormals()
 	return;
 
 } */
+bool& MeshModel::GetFacesBound()
+{
+	return faces_bound;
+}

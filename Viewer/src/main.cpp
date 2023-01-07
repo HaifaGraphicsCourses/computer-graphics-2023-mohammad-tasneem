@@ -44,6 +44,7 @@ void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 int main(int argc, char** argv)
 {
 
+
 	int windowWidth = 1280, windowHeight = 720;
 	GLFWwindow* window = SetupGlfwWindow(windowWidth, windowHeight, "Mesh Viewer");
 	if (!window)
@@ -59,7 +60,7 @@ int main(int argc, char** argv)
 	std::shared_ptr<MeshModel> cam_model = Utils::LoadMeshModel(path);
 	scene.camera_model = cam_model;
 	int id = scene.GetCameraCount();
-	scene.AddCamera(glm::vec3(3, 3, 0), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+	scene.AddCameranew(std::make_shared<Camera>());
 	ImGuiIO& io = SetupDearImgui(window);
 	glfwSetScrollCallback(window, ScrollCallback);
 	while (!glfwWindowShouldClose(window))
@@ -72,6 +73,8 @@ int main(int argc, char** argv)
 
 	Cleanup(window);
 	return 0;
+
+
 }
 
 static void GlfwErrorCallback(int error, const char* description)
@@ -122,60 +125,15 @@ void StartFrame()
 
 void RenderFrame(GLFWwindow* window, Scene& scene, Renderer& renderer, ImGuiIO& io)
 {
+
 	ImGui::Render();
 	int frameBufferWidth, frameBufferHeight;
 	glfwMakeContextCurrent(window);
 	glfwGetFramebufferSize(window, &frameBufferWidth, &frameBufferHeight);
-
 	if (frameBufferWidth != renderer.GetViewportWidth() || frameBufferHeight != renderer.GetViewportHeight())
 	{
 		Renderer renderer = Renderer(frameBufferWidth, frameBufferHeight);
 		glfwSetWindowAspectRatio(window, renderer.GetViewportWidth(), renderer.GetViewportHeight());
-	}
-
-	if (!io.WantCaptureKeyboard)
-	{
-		// TODO: Handle keyboard events here
-		if (io.KeysDown[65])
-		{
-			// A key is down
-			// Use the ASCII table for more key codes (https://www.asciitable.com/)
-		}
-		if (io.KeysDown[65]) // A is left
-		{
-			if (scene.GetModelCount() > 0)
-			{
-				MeshModel curr_mesh = scene.GetActiveModel();
-				if (slected_item_frame == 0)
-				{
-					scene.GetActiveModel().SetLocalTranslateMatrix(curr_mesh.local_translation[0] - 10, curr_mesh.local_translation[1], curr_mesh.local_translation[2]);
-				}
-				else
-				{
-					scene.GetActiveModel().SetWorldTranslateMatrix(curr_mesh.world_translation[0] - 10, curr_mesh.world_translation[1], curr_mesh.world_translation[0]);
-				}
-			}
-
-		}
-		if (io.KeysDown[76]) // L
-		{
-			scene.GetActiveCamera().IncremntalTransform(1);
-		}
-		if (io.KeysDown[82]) //R 
-		{
-			scene.GetActiveCamera().IncremntalTransform(0);
-		}
-
-
-	}
-
-	if (!io.WantCaptureMouse)
-	{
-		// TODO: Handle mouse events here
-		if (io.MouseDown[0])
-		{
-			// Left mouse button is down
-		}
 	}
 
 	renderer.ClearColorBuffer(clear_color);
@@ -252,26 +210,24 @@ void DrawImguiMenus(ImGuiIO& io, Scene& scene)
 
 	// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
 	{
+		// init all variables
 		static float f = 0.0f;
 		static int counter = 0;
-		static int scale_value = 1;
-
-
+		static int scale_value = 1;	
 		static bool mesh = TRUE;
 
-		//------------------
-		static float scale_x = 1;
-		static float scale_y = 1;
-		static float scale_z = 1;
-		//------------------
+		// init to scale(50,50,35) to get good scale in the scene
+		static float scale_x = 50;
+		static float scale_y = 50;
+		static float scale_z = 35;
 		static float translate_x = 0;
 		static float translate_y = 0;
 		static float translate_z = 0;
-		//------------------
 		static float rotate_x = 0;
 		static float rotate_y = 0;
 		static float rotate_z = 0;
-		//------------------
+		static bool colored = false;
+
 		if (scene.GetModelCount() > 0) {
 			MeshModel curr_mesh = scene.GetActiveModel();
 			if (slected_item_frame == 0)//local frame
@@ -298,6 +254,9 @@ void DrawImguiMenus(ImGuiIO& io, Scene& scene)
 
 		}
 
+
+		/////////////////////////////////// init main window///////////////////////////////////////
+
 		ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 		ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
@@ -308,6 +267,7 @@ void DrawImguiMenus(ImGuiIO& io, Scene& scene)
 			static bool show_face_normals = scene.GetActiveModel().GetShowFaceNormals();
 			static bool show_vertex_normals = scene.GetActiveModel().GetShowVertexNormals();
 			{// world local tranformation selction
+
 
 				const char* items[] = { "local", "world" };
 				/*static const char* current_item = items[0];*/
@@ -443,7 +403,7 @@ void DrawImguiMenus(ImGuiIO& io, Scene& scene)
 				}
 				//rotation sliders
 				if (selectedItem == 2) {
-					if (ImGui::SliderFloat("rotate x", &rotate_x, -100, 100))//
+					if (ImGui::SliderFloat("rotate x", &rotate_x, -200, 200))//
 					{
 						if (scene.GetModelCount() != 0)
 						{
@@ -458,7 +418,7 @@ void DrawImguiMenus(ImGuiIO& io, Scene& scene)
 						}
 
 					}
-					if (ImGui::SliderFloat("rotate y", &rotate_y, -100, 100))//
+					if (ImGui::SliderFloat("rotate y", &rotate_y, -200, 200))//
 					{
 						if (scene.GetModelCount() != 0)
 						{
@@ -473,7 +433,7 @@ void DrawImguiMenus(ImGuiIO& io, Scene& scene)
 						}
 
 					}
-					if (ImGui::SliderFloat("rotate z", &rotate_z, -100, 100))//
+					if (ImGui::SliderFloat("rotate z", &rotate_z, -200, 200))//
 					{
 						if (scene.GetModelCount() != 0)
 						{
@@ -489,8 +449,20 @@ void DrawImguiMenus(ImGuiIO& io, Scene& scene)
 					}
 				}
 
-				ImGui::Checkbox("Show axis ", &scene.GetActiveModel().show_axis);
-				ImGui::Checkbox("Show box ", &scene.GetActiveModel().bounding_box);
+				ImGui::Checkbox("faces BoundingBox", &scene.GetActiveModel().faces_bound);
+				if (ImGui::Checkbox("is_colored", &colored))
+				{
+					if (colored)
+					{
+						scene.setiscolored(1);
+					}
+					else
+					{
+						scene.setiscolored(0);
+					}
+				}
+			//	ImGui::Checkbox("Show axis ", &scene.GetActiveModel().show_axis);
+			/*	ImGui::Checkbox("Show box ", &scene.GetActiveModel().bounding_box);
 
 				if (ImGui::Checkbox("Faces Normals", &show_face_normals))
 				{
@@ -500,7 +472,7 @@ void DrawImguiMenus(ImGuiIO& io, Scene& scene)
 				{
 					scene.GetActiveModel().SetShowVertexNormals(!scene.GetActiveModel().GetShowVertexNormals());
 				}
-
+			*/
 			}
 		}
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -510,224 +482,223 @@ void DrawImguiMenus(ImGuiIO& io, Scene& scene)
 
 	// 3. Show another simple window.
 	{//camera controls window
-		static int ortho_persp = 0;//true ortho false pers
-		static float Near = scene.GetActiveCamera().GetzNear();
-		static float Far = scene.GetActiveCamera().GetzFar();
-		static float left = scene.GetActiveCamera().GetLeft();
-		static float right = scene.GetActiveCamera().GetRight();
-		static float top = scene.GetActiveCamera().GetTop();
-		static float bottom = scene.GetActiveCamera().GetBottom();
-		static float translate_x = 0;
-		static float translate_y = 0;
-		static float translate_z = 0;
-		static float rotate_x = 0;
-		static float rotate_y = 0;
-		static float rotate_z = 0;
-		static int slected_item_frame_camera = 0;
-		static int selectedItem = 0;
-		static float fovy = 0.25;
-		static float aspect = 1;
-		static bool draw_camera = false;
-		if (slected_item_frame_camera == 0)
+	static int ortho_persp = 1;//true ortho false pers
+	static float Near = scene.GetActiveCamera().GetzNear();
+	static float Far = scene.GetActiveCamera().GetzFar();
+	static float left = scene.GetActiveCamera().GetLeft();
+	static float right = scene.GetActiveCamera().GetRight();
+	static float top = scene.GetActiveCamera().GetTop();
+	static float bottom = scene.GetActiveCamera().GetBottom();
+	static float translate_x = 0;
+	static float translate_y = 0;
+	static float translate_z = 0;
+	static float rotate_x = 0;
+	static float rotate_y = 0;
+	static float rotate_z = 0;
+	static int slected_item_frame_camera = 0;
+	static int selectedItem = 0;
+	static float fovy = 0.25;
+	static float aspect = 1;
+	static bool draw_camera = false;
+	if (slected_item_frame_camera == 0)
+	{
+		translate_x = scene.GetActiveCamera().GetTranslateLocx();
+		translate_y = scene.GetActiveCamera().GetTranslateLocy();
+		translate_z = scene.GetActiveCamera().GetTranslateLocz();
+	}
+	else
+	{
+		translate_x = scene.GetActiveCamera().GetTranslateWorx();
+		translate_y = scene.GetActiveCamera().GetTranslateWory();
+		translate_z = scene.GetActiveCamera().GetTranslateWorz();
+	}
+	ImGui::Begin("Camera Control Window");
+	if (ImGui::CollapsingHeader("Cameras"))
+	{
+		static int camera_index = 1;
+		if (scene.GetCameraCount() > 1)
 		{
-			translate_x = scene.GetActiveCamera().local_translation[0];
-			translate_y = scene.GetActiveCamera().local_translation[1];
-			translate_z = scene.GetActiveCamera().local_translation[2];
+			static int sliderint = 1;
+			ImGui::SliderInt("Camera Selction", &camera_index, 1, scene.GetCameraCount());
+			scene.SetActiveCameraIndex(camera_index - 1);
 		}
-		else
+		if (ImGui::Button("Add Camera"))
 		{
-			translate_x = scene.GetActiveCamera().world_translation[0];
-			translate_y = scene.GetActiveCamera().world_translation[2];
-			translate_z = scene.GetActiveCamera().world_translation[1];
+			scene.AddCameranew(std::make_shared<Camera>());
 		}
-		ImGui::Begin("Camera Control Window");
-		if (ImGui::CollapsingHeader("Cameras"))
 		{
-			static int camera_index = 1;
-			if (scene.GetCameraCount() > 1)
+			ImGui::RadioButton("Perspictive", &ortho_persp, 0);
+			ImGui::SameLine();
+			ImGui::RadioButton("orthotographic", &ortho_persp, 1);
+			ImGui::SameLine();
+			if (ImGui::Checkbox("Draw Cameers", &draw_camera))
 			{
-				static int sliderint = 1;
-				ImGui::SliderInt("Camera Selction", &camera_index, 1, scene.GetCameraCount());
-				scene.SetActiveCameraIndex(camera_index - 1);
+				scene.SetDrawCamera(!scene.GetDrawCamera());
 			}
-			if (ImGui::Button("Add Camera"))
+		}
+		scene.GetActiveCamera().Setorth(ortho_persp);
+		if (scene.GetCameraCount())
+		{
+			if (!ortho_persp)
 			{
-				scene.AddCamera(glm::vec3(0, 0, 1), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-				//scene.AddCameranew(std::make_shared<Camera>());
-			}
-			{
-				ImGui::RadioButton("Perspictive", &ortho_persp, 0);
-				ImGui::SameLine();
-				ImGui::RadioButton("orthotographic", &ortho_persp, 1);
-				ImGui::SameLine();
-				if (ImGui::Checkbox("Draw Cameers", &draw_camera))
-				{
-					scene.SetDrawCamera(!scene.GetDrawCamera());
-				}
-			}
-			scene.GetActiveCamera().Setorth(ortho_persp);
-			if (scene.GetCameraCount())
-			{
-				if (!ortho_persp)
+				scene.GetActiveCamera().set_perspective(glm::radians(fovy));
+				if (ImGui::SliderFloat("fovy", &fovy, -200, 200))
 				{
 					scene.GetActiveCamera().set_perspective(glm::radians(fovy));
-					if (ImGui::SliderFloat("fovy", &fovy, -200, 200))
-					{
-						scene.GetActiveCamera().set_perspective(glm::radians(fovy));
-					}
-					if (ImGui::SliderFloat("Far", &Far, -10, 10))
-					{
-						scene.GetActiveCamera().SetzFar(Far);
-						//scene.GetActiveCamera().set_perspective(glm::radians(fovy));
-					}
-					if (ImGui::SliderFloat("Near", &Near, -10, 10))
-					{
-						scene.GetActiveCamera().SetzNear(Near);
-						//scene.GetActiveCamera().set_perspective(glm::radians(fovy));
-					}
-					if (ImGui::SliderFloat("Aspect", &aspect, 0, 1))
-					{
-						scene.GetActiveCamera().SetAspect(aspect);
-						//scene.GetActiveCamera().set_perspective(glm::radians(fovy));
-					}
 				}
-				else
+				if (ImGui::SliderFloat("Far", &Far, -10, 10))
 				{
-					if (ImGui::SliderFloat("Near", &Near, -100, 100))
-					{
-						scene.GetActiveCamera().SetzNear(Near);
-					}
-					if (ImGui::SliderFloat("Far", &Far, -100, 100))
-					{
-						scene.GetActiveCamera().SetzFar(Far);
-
-					}
-					if (ImGui::SliderFloat("Left", &left, -100, 100))
-					{
-						scene.GetActiveCamera().SetLeft(left);
-
-					}
-					if (ImGui::SliderFloat("Right", &right, -100, 100))
-					{
-						scene.GetActiveCamera().SetRight(right);
-
-					}
-					if (ImGui::SliderFloat("Top", &top, -100, 100))
-					{
-						scene.GetActiveCamera().SetTop(top);
-
-					}
-					if (ImGui::SliderFloat("Bottom", &bottom, -100, 100))
-					{
-						scene.GetActiveCamera().SetBottom(bottom);
-					}
-
+					scene.GetActiveCamera().SetzFar(Far);
+					//scene.GetActiveCamera().set_perspective(glm::radians(fovy));
 				}
-
+				if (ImGui::SliderFloat("Near", &Near, -10, 10))
+				{
+					scene.GetActiveCamera().SetzNear(Near);
+					//scene.GetActiveCamera().set_perspective(glm::radians(fovy));
+				}
+				if (ImGui::SliderFloat("Aspect", &aspect, 0, 1))
+				{
+					scene.GetActiveCamera().SetAspect(aspect);
+					//scene.GetActiveCamera().set_perspective(glm::radians(fovy));
+				}
 			}
-			static int selectedItem = 0;
-			const char* items[] = { "Translation", "Rotation" };
-			const char* frames[] = { "Local", "World" };
-			if (ImGui::Combo("World/Local", &slected_item_frame_camera, frames, 2))
+			else
 			{
+				if (ImGui::SliderFloat("Near", &Near, -100, 100))
+				{
+					scene.GetActiveCamera().SetzNear(Near);
+				}
+				if (ImGui::SliderFloat("Far", &Far, -100, 100))
+				{
+					scene.GetActiveCamera().SetzFar(Far);
+
+				}
+				if (ImGui::SliderFloat("Left", &left, -100, 100))
+				{
+					scene.GetActiveCamera().SetLeft(left);
+
+				}
+				if (ImGui::SliderFloat("Right", &right, -100, 100))
+				{
+					scene.GetActiveCamera().SetRight(right);
+
+				}
+				if (ImGui::SliderFloat("Top", &top, -100, 100))
+				{
+					scene.GetActiveCamera().SetTop(top);
+
+				}
+				if (ImGui::SliderFloat("Bottom", &bottom, -100, 100))
+				{
+					scene.GetActiveCamera().SetBottom(bottom);
+				}
 
 			}
-			if (ImGui::Combo("Traformation TYPE", &selectedItem, items, 2))
+
+		}
+		static int selectedItem = 0;
+		const char* items[] = { "Translation", "Rotation" };
+		const char* frames[] = { "Local", "World" };
+		if (ImGui::Combo("World/Local", &slected_item_frame_camera, frames, 2))
+		{
+
+		}
+		if (ImGui::Combo("Traformation TYPE", &selectedItem, items, 2))
+		{
+		}
+		if (selectedItem == 0) {
+			if (ImGui::SliderFloat("translate x", &translate_x, -640, 640))//
 			{
+				if (scene.GetCameraCount() != 0)
+				{
+					if (slected_item_frame_camera == 0)
+					{
+						scene.GetActiveCamera().SetLocalTranslateMatrix(translate_x, translate_y, translate_z);
+					}
+					else//TODO:world
+					{
+						scene.GetActiveCamera().SetWorldTranslateMatrix(translate_x, translate_y, translate_z);
+					}
+				}
+
 			}
-			if (selectedItem == 0) {
-				if (ImGui::SliderFloat("translate x", &translate_x, -640, 640))//
+			if (ImGui::SliderFloat("translate y", &translate_y, -320, 320))//
+			{
+				if (scene.GetCameraCount() != 0)
 				{
-					if (scene.GetCameraCount() != 0)
+					if (slected_item_frame_camera == 0)
 					{
-						if (slected_item_frame_camera == 0)
-						{
-							scene.GetActiveCamera().SetLocalTranslateMatrix(translate_x, translate_y, translate_z);
-						}
-						else//TODO:world
-						{
-							scene.GetActiveCamera().SetWorldTranslateMatrix(translate_x, translate_y, translate_z);
-						}
+						scene.GetActiveCamera().SetLocalTranslateMatrix(translate_x, translate_y, translate_z);
 					}
+					else//TODO:world
+					{
+						scene.GetActiveCamera().SetWorldTranslateMatrix(translate_x, translate_y, translate_z);
+					}
+				}
 
-				}
-				if (ImGui::SliderFloat("translate y", &translate_y, -320, 320))//
-				{
-					if (scene.GetCameraCount() != 0)
-					{
-						if (slected_item_frame_camera == 0)
-						{
-							scene.GetActiveCamera().SetLocalTranslateMatrix(translate_x, translate_y, translate_z);
-						}
-						else//TODO:world
-						{
-							scene.GetActiveCamera().SetWorldTranslateMatrix(translate_x, translate_y, translate_z);
-						}
-					}
-
-				}
-				if (ImGui::SliderFloat("translate z", &translate_z, -10, 10))//
-				{
-					if (scene.GetCameraCount() != 0)
-					{
-						if (slected_item_frame_camera == 0)
-						{
-							scene.GetActiveCamera().SetLocalTranslateMatrix(translate_x, translate_y, translate_z);
-						}
-						else//TODO: world
-						{
-							scene.GetActiveCamera().SetWorldTranslateMatrix(translate_x, translate_y, translate_z);
-						}
-					}
-				}
 			}
-			if (selectedItem == 1) {
-				if (ImGui::SliderFloat("rotate x", &rotate_x, -360, 360))//
+			if (ImGui::SliderFloat("translate z", &translate_z, -10, 10))//
+			{
+				if (scene.GetCameraCount() != 0)
 				{
-					if (scene.GetCameraCount() != 0)
+					if (slected_item_frame_camera == 0)
 					{
-						if (slected_item_frame_camera == 0)
-						{
-							scene.GetActiveCamera().SetLocalRotateMatrix(rotate_x, rotate_y, rotate_z);
-						}
-						else//TODO:world
-						{
-							scene.GetActiveCamera().SetWorldRotateMatrix(rotate_x, rotate_y, rotate_z);
-						}
+						scene.GetActiveCamera().SetLocalTranslateMatrix(translate_x, translate_y, translate_z);
 					}
-
-				}
-				if (ImGui::SliderFloat("rotate y", &rotate_y, -100, 100))//
-				{
-					if (scene.GetCameraCount() != 0)
+					else//TODO: world
 					{
-						if (slected_item_frame_camera == 0)
-						{
-							scene.GetActiveCamera().SetLocalRotateMatrix(rotate_x, rotate_y, rotate_z);
-						}
-						else//TODO:world
-						{
-							scene.GetActiveCamera().SetWorldRotateMatrix(rotate_x, rotate_y, rotate_z);
-						}
-					}
-
-				}
-				if (ImGui::SliderFloat("rotate z", &rotate_z, -360, 360))//
-				{
-					if (scene.GetCameraCount() != 0)
-					{
-						if (slected_item_frame_camera == 0)
-						{
-							scene.GetActiveCamera().SetLocalRotateMatrix(rotate_x, rotate_y, rotate_z);
-						}
-						else//TODO: world
-						{
-							scene.GetActiveCamera().SetWorldRotateMatrix(rotate_x, rotate_y, rotate_z);
-						}
+						scene.GetActiveCamera().SetWorldTranslateMatrix(translate_x, translate_y, translate_z);
 					}
 				}
 			}
 		}
-		ImGui::End();
+		if (selectedItem == 1) {
+			if (ImGui::SliderFloat("rotate x", &rotate_x, -360, 360))//
+			{
+				if (scene.GetCameraCount() != 0)
+				{
+					if (slected_item_frame_camera == 0)
+					{
+						scene.GetActiveCamera().SetLocalRotateMatrix(rotate_x, rotate_y, rotate_z);
+					}
+					else//TODO:world
+					{
+						scene.GetActiveCamera().SetWorldRotateMatrix(rotate_x, rotate_y, rotate_z);
+					}
+				}
+
+			}
+			if (ImGui::SliderFloat("rotate y", &rotate_y, -100, 100))//
+			{
+				if (scene.GetCameraCount() != 0)
+				{
+					if (slected_item_frame_camera == 0)
+					{
+						scene.GetActiveCamera().SetLocalRotateMatrix(rotate_x, rotate_y, rotate_z);
+					}
+					else//TODO:world
+					{
+						scene.GetActiveCamera().SetWorldRotateMatrix(rotate_x, rotate_y, rotate_z);
+					}
+				}
+
+			}
+			if (ImGui::SliderFloat("rotate z", &rotate_z, -360, 360))//
+			{
+				if (scene.GetCameraCount() != 0)
+				{
+					if (slected_item_frame_camera == 0)
+					{
+						scene.GetActiveCamera().SetLocalRotateMatrix(rotate_x, rotate_y, rotate_z);
+					}
+					else//TODO: world
+					{
+						scene.GetActiveCamera().SetWorldRotateMatrix(rotate_x, rotate_y, rotate_z);
+					}
+				}
+			}
+		}
+	}
+	ImGui::End();
 	}
 }

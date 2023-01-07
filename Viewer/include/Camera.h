@@ -3,66 +3,90 @@
 #include <iostream>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <MeshModel.h>
-#include <memory>
-
-class Camera : public MeshModel
+class Camera
 {
 public:
-	Camera(const glm::vec3& eye, const glm::vec3& at, const glm::vec3& up, std::shared_ptr<MeshModel>& model, int id,const float aspectRatio);
+	Camera();
+	Camera(const glm::vec3& eye, const glm::vec3& at, const glm::vec3& up, const float aspectRatio);
 	virtual ~Camera();
-
+	void SetCameraLookAt(const glm::vec3& eye, const glm::vec3& at, const glm::vec3& up);
+	void SetLocalTranslateMatrix(float translate_x, float  translate_y, float  translate_z);
+	void SetLocalRotateMatrix(float rotate_x, float  rotate_y, float  rotate_z);
+	void SetWorldTranslateMatrix(float translate_x, float  translate_y, float  translate_z);
+	void SetWorldRotateMatrix(float rotate_x, float  rotate_y, float  rotate_z);
+	const glm::mat4x4& GetProjectionTransformation() const;
+	const glm::mat4x4& GetViewTransformation() const;
+	void Camera::set_perspective(float fov);
 	float GetzNear();
 	float GetzFar();
 	float GetLeft();
 	float GetRight();
 	float GetTop();
 	float GetBottom();
-
-	void Camera::SetzNear(float Near);
-	void  Camera::SetzFar(float Far);
-	void  Camera::SetLeft(float left);
-	void  Camera::SetRight(float right);
-	void  Camera::SetTop(float top);
-	void  Camera::SetBottom(float bottom);
-	void  Camera::SetAspect(float Aspect);
-
-	void SetCameraLookAt(const glm::vec3& eye, const glm::vec3& at, const glm::vec3& up);
-	void Camera::SetPerspectiveProjection(const float fovy, const float aspectRatio, const float near, const float far);
-	void Camera::SetOrthographicProjection(const float l, const float r, const float b, const float t, const float n, const float f);
-	void SetPerspective(const float left, const float right, const float bottom, const float top, const float near, const float far);
-	const glm::mat4x4& GetProjectionTransformation() const;
-	const glm::mat4x4& GetViewTransformationold() const;
-	const glm::mat4x4& Camera::GetViewTransformation() const;
-	void Camera::IncremntalTransform(int flag);
-	bool Getorth();
-	void Camera::set_perspective(float fov);
+	void SetzNear(float Near);
+	void SetzFar(float Far);
+	void SetLeft(float left);
+	void SetRight(float right);
+	void SetTop(float top);
+	void SetBottom(float bottom);
+	void SetAspect(float Aspect);
 	void Camera::Setorth(bool is_orth);
-
-
+	bool Camera::Getorth();
+	glm::mat4x4 GetWorldLocal();
+	void IncremntalTransform(int flag);
+	float GetTranslateLocx();
+	float GetTranslateLocy();
+	float GetTranslateLocz();
+	float GetRotateLocx();
+	float GetRotateLocy();
+	float GetRotateLocz();
+	float GetTranslateWorx();
+	float GetTranslateWory();
+	float GetTranslateWorz();
+	float GetRotateWorx();
+	float GetRotateWory();
+	float GetRotateWorz();
 private:
-	glm::mat4x4 view_transformation_;
-	glm::mat4x4 projection_transformation_;
-
-	glm::vec3 eye = glm::vec3(0, 0, 1);
-	glm::vec3 up = glm::vec3(0,1,0);
-	glm::vec3 at = glm::vec3(0, 0, 0);
-
-	glm::mat4 inversemat = glm::inverse(world_translate_mat * world_X_rotation_mat
-	* world_Y_rotation_mat * world_Z_rotation_mat * local_translate_mat * 
-	local_X_rotation_mat * local_Y_rotation_mat * local_Z_rotation_mat);
-
-	float zNear = 80;
-	float zFar = -80;
-	float zNearPer = 80;
-	float zFarPer = -80;
-	float left = -80;
-	float right = 80;
-	float bottom = -80;
-	float top = 80;
+	glm::mat4x4 view_transformation = glm::mat4x4(1.0f);
+	glm::mat4x4 projection_transformation;
+	glm::mat4x4 translate_mat_loc = glm::mat4(1.0f);
+	glm::mat4x4 rotation_mat_locX = glm::mat4(1.0f);
+	glm::mat4x4 rotation_mat_locY = glm::mat4(1.0f);
+	glm::mat4x4 rotation_mat_locZ = glm::mat4(1.0f);
+	glm::mat4x4 translate_mat_wor = glm::mat4(1.0f);
+	glm::mat4x4 rotation_mat_worX = glm::mat4(1.0f);
+	glm::mat4x4 rotation_mat_worY = glm::mat4(1.0f);
+	glm::mat4x4 rotation_mat_worZ = glm::mat4(1.0f);
+	glm::vec3 eye;
+	glm::vec3 up;
+	glm::vec3 at;
+	glm::mat4 inversemat = glm::inverse(translate_mat_wor * rotation_mat_worX * rotation_mat_worY * rotation_mat_worZ * translate_mat_loc * rotation_mat_locX * rotation_mat_locY * rotation_mat_locZ);
+	bool perspective = false;
+	float zNear;
+	float zFar;
+	float zNearPer;
+	float zFarPer;
+	float left;
+	float right;
+	float bottom;
+	float top;
 	float fovy;
 	float aspect = 1280 / 640;
-	bool is_orth = 1;
-	bool perspective = false;
+	float is_orth = 1;
 	float height;
+	glm::mat4x4 viewTransformation;
+	//-------------------------
+	float translate_loc_x = 0;
+	float translate_loc_y = 0;
+	float translate_loc_z = 0;
+	float rotate_loc_x = 0;
+	float rotate_loc_y = 0;
+	float rotate_loc_z = 0;
+	//--------------------------
+	float translate_wor_x = 0;
+	float translate_wor_y = 0;
+	float translate_wor_z = 0;
+	float rotate_wor_x = 0;
+	float rotate_wor_y = 0;
+	float rotate_wor_z = 0;
 };

@@ -32,12 +32,7 @@ MeshModel& Scene::GetActiveModel() const
 
 void Scene::AddCamera(glm::vec3 eye, glm::vec3 at, glm::vec3 up)
 {
-	std::string path = "..\\Data\\camera.obj";
-	std::shared_ptr<MeshModel>& model = Utils::LoadMeshModel(path);
 
-	int id = cameras_.size();
-	std::shared_ptr<Camera>  camera = std::make_shared<Camera>(eye, at, up, model, id, 1280 / 640);
-	cameras_.push_back(camera);
 
 }
 void Scene::AddCameranew(const std::shared_ptr<Camera>& camera)
@@ -92,4 +87,12 @@ bool Scene::GetDrawCamera() const
 MeshModel& Scene::GetCameraMesh() const
 {
 	return *this->camera_model;
+}
+int Scene::getiscolored()
+{
+	return this->is_colored;
+}
+void Scene::setiscolored(int iscolored)
+{
+	this->is_colored = iscolored;
 }

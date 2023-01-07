@@ -138,3 +138,18 @@ std::string Utils::GetFileName(const std::string& filePath)
 
 	return filePath.substr(index + 1, len - index);
 }
+bool Utils::IsInsideTraingle(const glm::ivec2& curr_point, const glm::ivec2& p1, const glm::ivec2& p2, const glm::ivec2& p3)
+{
+	float s = (p1.x - p3.x) * (curr_point.y - p3.y) - (p1.y - p3.y) * (curr_point.x - p3.x);
+	float t = (p2.x - p1.x) * (curr_point.y - p1.y) - (p2.y - p1.y) * (curr_point.x - p1.x);
+
+	if ((s < 0) != (t < 0) && s != 0 && t != 0)
+		return false;
+
+	float k = (p3.x - p2.x) * (curr_point.y - p2.y) - (p3.y - p2.y) * (curr_point.x - p2.x);
+
+	if (k == 0 || (k < 0) == (s + t <= 0))
+		return true;
+
+	return false;
+}

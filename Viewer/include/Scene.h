@@ -32,6 +32,9 @@ public:
 	void SetDrawCamera(bool flag);
 	bool GetDrawCamera()const;
 	void Scene::AddCameranew(const std::shared_ptr<Camera>& camera);
+	int is_colored = 0;
+	int getiscolored();
+	void setiscolored(int iscolored);
 
 private:
 	std::vector<std::shared_ptr<MeshModel>> mesh_models_;

@@ -5,16 +5,26 @@
 #include "Renderer.h"
 #include "InitShader.h"
 #include <iostream>
+using namespace std;
+
 
 #define INDEX(width,x,y,c) ((x)+(y)*(width))*3+(c)
 #define Z_INDEX(width,x,y) ((x)+(y)*(width))
 
 Renderer::Renderer(int viewport_width, int viewport_height) :
-	viewport_width_(viewport_width),
-	viewport_height_(viewport_height)
+	viewport_width(viewport_width),
+	viewport_height(viewport_height)
 {
 	InitOpenGLRendering();
 	CreateBuffers(viewport_width, viewport_height);
+	for (int i = 0; i < viewport_width * viewport_height; i++)
+	{
+		z_buffer.push_back(INFINITY);
+	}
+	for (int i = 0; i < viewport_width * viewport_height; i++)
+	{
+		temp_color_buffer.push_back(glm::vec3(0.8, 0.8, 0.8));
+	}
 }
 void Renderer::DrawLine2(const glm::ivec2& p1, const glm::ivec2& p2, const glm::vec3& color)
 {
@@ -125,28 +135,30 @@ void Renderer::DrawLine2(const glm::ivec2& p1, const glm::ivec2& p2, const glm::
 	}
 }
 
-
 Renderer::~Renderer()
 {
 	delete[] color_buffer_;
+	delete[] Z_buffer;
 }
 
 void Renderer::PutPixel(int i, int j, const glm::vec3& color)
 {
-	if (i < 0) return; if (i >= viewport_width_) return;
-	if (j < 0) return; if (j >= viewport_height_) return;
+	if (i < 0) return; if (i >= viewport_width) return;
+	if (j < 0) return; if (j >= viewport_height) return;
 
-	color_buffer_[INDEX(viewport_width_, i, j, 0)] = color.x;
-	color_buffer_[INDEX(viewport_width_, i, j, 1)] = color.y;
-	color_buffer_[INDEX(viewport_width_, i, j, 2)] = color.z;
+	color_buffer[INDEX(viewport_width, i, j, 0)] = color.x;
+	color_buffer[INDEX(viewport_width, i, j, 1)] = color.y;
+	color_buffer[INDEX(viewport_width, i, j, 2)] = color.z;
 }
 
 
 void Renderer::CreateBuffers(int w, int h)
 {
 	CreateOpenGLBuffer(); //Do not remove this line.
-	color_buffer_ = new float[3 * w * h];
+	color_buffer = new float[3 * w * h];
 	ClearColorBuffer(glm::vec3(0.0f, 0.0f, 0.0f));
+	Z_buffer = new float[w * h];
+
 }
 
 //##############################
@@ -237,8 +249,8 @@ void Renderer::CreateOpenGLBuffer()
 	glBindTexture(GL_TEXTURE_2D, gl_screen_tex_);
 
 	// malloc for a texture on the gpu.
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, viewport_width_, viewport_height_, 0, GL_RGB, GL_FLOAT, NULL);
-	glViewport(0, 0, viewport_width_, viewport_height_);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, viewport_width, viewport_height, 0, GL_RGB, GL_FLOAT, NULL);
+	glViewport(0, 0, viewport_width, viewport_height);
 }
 
 void Renderer::SwapBuffers()
@@ -250,7 +262,7 @@ void Renderer::SwapBuffers()
 	glBindTexture(GL_TEXTURE_2D, gl_screen_tex_);
 
 	// memcopy's colorBuffer into the gpu.
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, viewport_width_, viewport_height_, GL_RGB, GL_FLOAT, color_buffer_);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, viewport_width, viewport_height, GL_RGB, GL_FLOAT, color_buffer);
 
 	// Tells opengl to use mipmapping
 	glGenerateMipmap(GL_TEXTURE_2D);
@@ -264,9 +276,9 @@ void Renderer::SwapBuffers()
 
 void Renderer::ClearColorBuffer(const glm::vec3& color)
 {
-	for (int i = 0; i < viewport_width_; i++)
+	for (int i = 0; i < viewport_width; i++)
 	{
-		for (int j = 0; j < viewport_height_; j++)
+		for (int j = 0; j < viewport_height; j++)
 		{
 			PutPixel(i, j, color);
 		}
@@ -275,8 +287,8 @@ void Renderer::ClearColorBuffer(const glm::vec3& color)
 
 void Renderer::Render(Scene& scene)
 {
-	int half_width = viewport_width_ / 2;
-	int half_height = viewport_height_ / 2;
+	int half_width = viewport_width / 2;
+	int half_height = viewport_height / 2;
 	//DrawWorldAxis(scene, half_width, half_height);
 	if (scene.GetModelCount() > 0)
 	{
@@ -286,12 +298,35 @@ void Renderer::Render(Scene& scene)
 		{
 			MeshModel curr_mesh = scene.GetModel(i);
 			//DrawMeshModel(curr_mesh,curr_mesh.GetTranformationMat(),  scene);
-			DrawMesh(curr_mesh, curr_mesh.GetVerticesList(), curr_mesh.GetFacesList(), scene, half_width, half_height);
+			DrawMesh(curr_mesh, curr_mesh.GetVerticesList(), curr_mesh.GetFacesList(), scene, half_width, half_height, i);
 		}
 
 		MeshModel curr_mesh = scene.GetActiveModel();
 		//DrawMeshModel(curr_mesh, curr_mesh.GetTranformationMat(), scene);
-		DrawMesh(curr_mesh, curr_mesh.GetVerticesList(), curr_mesh.GetFacesList(), scene, half_width, half_height);
+		DrawMesh(curr_mesh, curr_mesh.GetVerticesList(), curr_mesh.GetFacesList(), scene, half_width, half_height,2);
+	}
+	//glm::vec3 randomcolor = glm::vec3(1,0,0);
+	Scene scene1 = scene;
+	if (scene1.getiscolored())
+	{
+		for (int i = 0; i < viewport_width; i++)
+		{
+			for (int j = 0; j < viewport_height; j++)
+			{
+				if (z_buffer[Z_INDEX(viewport_width, i, j)] != INFINITY)
+				{
+					float alpha = (10 - z_buffer[Z_INDEX(viewport_width, i, j)]) / (20);
+
+					PutPixel(i, j,alpha* temp_color_buffer[Z_INDEX(viewport_width, i, j)]);
+				//	PutPixel(i, j, glm::vec3(alpha, alpha, alpha));
+					z_buffer[Z_INDEX(viewport_width, i, j)] = INFINITY;
+					temp_color_buffer[Z_INDEX(viewport_width, i, j)] =glm::vec3(0.8, 0.8, 0.8);
+				}
+
+			}
+		}
+		maxz = -1 * INFINITY;
+		minz = INFINITY;
 	}
 	if (scene.GetDrawCamera() == true)
 	{
@@ -321,12 +356,12 @@ void Renderer::Render(Scene& scene)
 					v0 /= v0.w ? v0.w : 1;
 					v1 /= v1.w ? v1.w : 1;
 					v2 /= v2.w ? v2.w : 1;
-					v0.x += viewport_width_ / 2;
-					v1.x += viewport_width_ / 2;
-					v2.x += viewport_width_ / 2;
-					v0.y += viewport_height_ / 2;
-					v1.y += viewport_height_ / 2;
-					v2.y += viewport_height_ / 2;
+					v0.x += viewport_width / 2;
+					v1.x += viewport_width / 2;
+					v2.x += viewport_width / 2;
+					v0.y += viewport_height / 2;
+					v1.y += viewport_height / 2;
+					v2.y += viewport_height / 2;
 					DrawLine2(v0, v1, glm::vec3(0, 0, 0));
 					DrawLine2(v0, v2, glm::vec3(0, 0, 0));
 					DrawLine2(v2, v1, glm::vec3(0, 0, 0));
@@ -341,12 +376,12 @@ void Renderer::Render(Scene& scene)
 
 int Renderer::GetViewportWidth() const
 {
-	return viewport_width_;
+	return viewport_width;
 }
 
 int Renderer::GetViewportHeight() const
 {
-	return viewport_height_;
+	return viewport_height;
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void Renderer::DrawMeshModel(MeshModel& model, glm::mat4x4 transformation, Scene& scene)
@@ -381,19 +416,19 @@ void Renderer::DrawMeshModel(MeshModel& model, glm::mat4x4 transformation, Scene
 
 glm::vec2 Renderer::PointAjdustment(float x, float y)
 {
-	if (viewport_width_ > viewport_height_)
+	if (viewport_width > viewport_height)
 	{
-		x = x * (viewport_height_ / 4.0f)
-			+ (viewport_width_ * 0.5f);
-		y = y * (viewport_height_ / 4.0f)
-			+ (viewport_height_ * 0.5f);
+		x = x * (viewport_height / 4.0f)
+			+ (viewport_width * 0.5f);
+		y = y * (viewport_height / 4.0f)
+			+ (viewport_height * 0.5f);
 	}
 	else
 	{
-		x = x * (viewport_width_ / 4.0f)
-			+ (viewport_width_ * 0.5f);
-		y = y * (viewport_width_ / 4.0f)
-			+ (viewport_height_ * 0.5f);
+		x = x * (viewport_width / 4.0f)
+			+ (viewport_width * 0.5f);
+		y = y * (viewport_width / 4.0f)
+			+ (viewport_height * 0.5f);
 	}
 	return glm::vec2(x, y);
 
@@ -495,7 +530,7 @@ void Renderer::DrawLineBresenham(int x1, int y1, int x2, int y2, const glm::vec3
 		}
 	}
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////
+
 void Renderer::DrawBoundingBox(MeshModel& model)
 {
 	glm::mat4x4 transformation = model.GetTranformationMat();
@@ -521,104 +556,39 @@ void Renderer::DrawBoundingBox(MeshModel& model)
 	DrawLine(PB[6], PB[7], model.color_b);
 
 }
-void Renderer::DrawVertexNormals(MeshModel mesh, Scene scene, int width, int height) {
-	int face_count = mesh.GetFacesCount();
-	glm::vec3 p1, p2, p3;
-	glm::mat4 transformation = mesh.GetTranformationMat();
-	glm::mat4x4 camera_transform = scene.GetActiveCamera().GetViewTransformation();
-	glm::mat4x4 worldaxesmodel_transform = camera_transform * mesh.GetTranslateMatwor() * mesh.GetRotatexMatwor() * mesh.GetRotateyMatwor() * mesh.GetRotatezMatwor() * mesh.world_scale_mat * mesh.GetTranslateMatLoc() * mesh.GetScaleMatLoc();
-	transformation = camera_transform * transformation;
-
-	for (int i = 0; i < face_count; i++) {
-
-		Face face = mesh.GetFace(i);
-		p1 = mesh.GetVertex(face.GetVertexIndex(0) - 1);
-		p2 = mesh.GetVertex(face.GetVertexIndex(1) - 1);
-		p3 = mesh.GetVertex(face.GetVertexIndex(2) - 1);
-		glm::vec4 temp_vec = glm::vec4(p1, 1);
-		temp_vec = transformation * temp_vec;
-		p1.x = temp_vec.x / temp_vec.w;
-		p1.y = temp_vec.y / temp_vec.w;
-		p1.z = temp_vec.z / temp_vec.w;
-		temp_vec = glm::vec4(p2, 1);
-		temp_vec = transformation * temp_vec;
-		p2.x = temp_vec.x / temp_vec.w;
-		p2.y = temp_vec.y / temp_vec.w;
-		p2.z = temp_vec.z / temp_vec.w;
-		temp_vec = glm::vec4(p3, 1);
-		temp_vec = transformation * temp_vec;
-		p3.x = temp_vec.x / temp_vec.w;
-		p3.y = temp_vec.y / temp_vec.w;
-		p3.z = temp_vec.z / 1;
-		p1.x = (p1.x + 1) * width;
-		p1.y = (p1.y + 1) * height;
-		p2.x = (p2.x + 1) * width;;
-		p2.y = (p2.y + 1) * height;
-		p3.x = (p3.x + 1) * width;;
-		p3.y = (p3.y + 1) * height;
-
-		glm::vec3 p1_normal = mesh.GetNormal(face.GetNormalIndex(0) - 1);
-		glm::vec3 p2_normal = mesh.GetNormal(face.GetNormalIndex(1) - 1);
-		glm::vec3 p3_normal = mesh.GetNormal(face.GetNormalIndex(2) - 1);
-		p1_normal *= 69;
-		p2_normal *= 69;
-		p3_normal *= 69;
-		DrawLine2(glm::vec2(p1.x, p1.y), glm::vec2(p1.x + p1_normal.x, p1.y + p1_normal.y), glm::vec3(0, 1, 1));
-		DrawLine2(glm::vec2(p2.x, p2.y), glm::vec2(p2.x + p2_normal.x, p2.y + p2_normal.y), glm::vec3(0, 1, 1));
-		DrawLine2(glm::vec2(p3.x, p3.y), glm::vec2(p3.x + p3_normal.x, p3.y + p3_normal.y), glm::vec3(0, 1, 1));
+void Renderer::DrawColoredTriangle(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3) {
+	float minX = min(p1.x, min(p2.x, p3.x));
+	float minY = min(p1.y, min(p2.y, p3.y));
+	float maxX = max(p1.x, max(p2.x, p3.x));
+	float maxY = max(p1.y, max(p2.y, p3.y));
+	int flag;
+	glm::vec3 point;
+	glm::vec3 randomcolor = glm::vec3(rand() / 10000, rand() / 10000, rand() / 10000);
+	for (int i = minX; i <= maxX; i++)
+	{
+		for (int j = minY; j <= maxY; j++)
+		{
+			if (i < viewport_width && j < viewport_height && i > 0 && j > 0)
+				if (i < viewport_width && j < viewport_height && i > 0 && j > 0)
+				{
+					point.x = i;
+					point.y = j;
+					flag = Utils::IsInsideTraingle(point, p1, p2, p3);
+					if (flag)
+					{
+						PutPixel(i, j, randomcolor);
+					}
+				}
+		}
 	}
 }
-void Renderer::DrawFacesNormals(MeshModel mesh, Scene scene, int width, int height) {
-	int face_count = mesh.GetFacesCount();
-	glm::vec3 p1, p2, p3;
-	glm::mat4 transformation = mesh.GetTranformationMat();
-	glm::mat4x4 camera_transform = scene.GetActiveCamera().GetViewTransformation();
-	glm::mat4x4 worldaxesmodel_transform = camera_transform * mesh.GetTranslateMatwor() * mesh.GetRotatexMatwor() * mesh.GetRotateyMatwor() * mesh.GetRotatezMatwor() * mesh.world_scale_mat * mesh.GetTranslateMatLoc() * mesh.GetScaleMatLoc();
-	transformation = camera_transform * transformation;
 
-	for (int i = 0; i < face_count; i++) {
-
-		Face face = mesh.GetFace(i);
-		p1 = mesh.GetVertex(face.GetVertexIndex(0) - 1);
-		p2 = mesh.GetVertex(face.GetVertexIndex(1) - 1);
-		p3 = mesh.GetVertex(face.GetVertexIndex(2) - 1);
-		glm::vec4 temp_vec = glm::vec4(p1, 1);
-		temp_vec = transformation * temp_vec;
-		p1.x = temp_vec.x / temp_vec.w;
-		p1.y = temp_vec.y / temp_vec.w;
-		p1.z = temp_vec.z / temp_vec.w;
-		temp_vec = glm::vec4(p2, 1);
-		temp_vec = transformation * temp_vec;
-		p2.x = temp_vec.x / temp_vec.w;
-		p2.y = temp_vec.y / temp_vec.w;
-		p2.z = temp_vec.z / temp_vec.w;
-		temp_vec = glm::vec4(p3, 1);
-		temp_vec = transformation * temp_vec;
-		p3.x = temp_vec.x / temp_vec.w;
-		p3.y = temp_vec.y / temp_vec.w;
-		p3.z = temp_vec.z / 1;
-		p1.x = (p1.x + 1) * width;
-		p1.y = (p1.y + 1) * height;
-		p2.x = (p2.x + 1) * width;;
-		p2.y = (p2.y + 1) * height;
-		p3.x = (p3.x + 1) * width;;
-		p3.y = (p3.y + 1) * height;
-
-		glm::vec3 edge1 = p2 - p1;
-		glm::vec3 edge2 = p3 - p1;
-		glm::vec3 face_normal = glm::cross(edge1, edge2);
-		face_normal = glm::normalize(face_normal);
-		face_normal *= 69;
-		glm::vec3 center = p1 + p2 + p3;
-		center /= 3;
-		DrawLine2(glm::vec2(center), glm::vec2(face_normal.x + p1.x, face_normal.y + p1.y), glm::vec3(0, 0, 1));
-
-	}
-}
-void Renderer::DrawMesh(MeshModel mesh, std::vector<glm::vec3> vertices, std::vector<Face> faces, Scene scene, int width, int height)
+void Renderer::DrawMesh(MeshModel mesh, std::vector<glm::vec3> vertices, std::vector<Face> faces, Scene scene, int width, int height , int index)
 {
+	// Draw Faces and implement operation according to the assigment
+
 	int face_count = faces.size();
-	glm::vec3 p1, p2, p3;
+	glm::vec3 p1, p2, p3, facecolor;
 	glm::mat4 T_mat = mesh.GetTranformationMat();
 	glm::mat4x4 camera_transform = scene.GetActiveCamera().GetViewTransformation();
 	glm::mat4x4 worldaxesmodel_transform = camera_transform * mesh.GetTranslateMatwor() * mesh.GetRotatexMatwor() * mesh.GetRotateyMatwor() * mesh.GetRotatezMatwor() * mesh.world_scale_mat * mesh.GetTranslateMatLoc() * mesh.GetScaleMatLoc();
@@ -631,51 +601,75 @@ void Renderer::DrawMesh(MeshModel mesh, std::vector<glm::vec3> vertices, std::ve
 		p3 = vertices[face.GetVertexIndex(2) - 1];
 		glm::vec4 temp_vec = glm::vec4(p1, 1);
 		temp_vec = T_mat * temp_vec;
+
 		p1.x = temp_vec.x / temp_vec.w;
 		p1.y = temp_vec.y / temp_vec.w;
 		p1.z = temp_vec.z / temp_vec.w;
 		temp_vec = glm::vec4(p2, 1);
 		temp_vec = T_mat * temp_vec;
+
 		p2.x = temp_vec.x / temp_vec.w;
 		p2.y = temp_vec.y / temp_vec.w;
 		p2.z = temp_vec.z / temp_vec.w;
 		temp_vec = glm::vec4(p3, 1);
+
 		temp_vec = T_mat * temp_vec;
 		p3.x = temp_vec.x / temp_vec.w;
 		p3.y = temp_vec.y / temp_vec.w;
 		p3.z = temp_vec.z / 1;
+
 		p1.x = (p1.x + 1) * width;
 		p1.y = (p1.y + 1) * height;
 		p2.x = (p2.x + 1) * width;;
 		p2.y = (p2.y + 1) * height;
 		p3.x = (p3.x + 1) * width;;
 		p3.y = (p3.y + 1) * height;
+
+		int max_x = std::max(p1.x, std::max(p2.x, p3.x));
+		int max_y = std::max(p1.y, std::max(p2.y, p3.y));
+		int min_x = std::min(p1.x, std::min(p2.x, p3.x));
+		int min_y = std::min(p1.y, std::min(p2.y, p3.y));
+
+		//draw faces of the mesh 
 		DrawLine2(glm::vec2(p1.x, p1.y), glm::vec2(p2.x, p2.y), glm::vec3(0, 0, 0));
 		DrawLine2(glm::vec2(p1.x, p1.y), glm::vec2(p3.x, p3.y), glm::vec3(0, 0, 0));
 		DrawLine2(glm::vec2(p2.x, p2.y), glm::vec2(p3.x, p3.y), glm::vec3(0, 0, 0));
-		if (mesh.GetShowFaceNormals() == true)
+
+		//DrawColoredTriangle(p1, p2, p3);   // used only for part 2 of the assignment
+
+		// if scene is colored , color each mesh with appropriate color to look different
+		if (scene.getiscolored())
 		{
-			glm::vec3 edge1 = p2 - p1;
-			glm::vec3 edge2 = p3 - p1;
-			glm::vec3 face_normal = glm::cross(edge1, edge2);
-			face_normal = glm::normalize(face_normal);
-			face_normal *= 69;
-			glm::vec3 center = p1 + p2 + p3;
-			center /= 3;
-			DrawLine2(glm::vec2(center), glm::vec2(face_normal.x + p1.x, face_normal.y + p1.y), glm::vec3(0, 0, 1));
+			facecolor = glm::vec3((float)rand() / RAND_MAX, (float)rand() / RAND_MAX, (float)rand() / RAND_MAX);
+			if (index == 0)
+			{
+				Scan(p1, p2, p3, min_x, max_x, min_y, max_y, glm::vec3(1, 0, 1));
+			}
+			else if (index == 1)
+			{
+				Scan(p1, p2, p3, min_x, max_x, min_y, max_y, glm::vec3(0, 1, 1));
+			}
+
+
 		}
-		if (mesh.GetShowVertexNormals() == true)
+
+		// for part 1 of the assignment 
+		if (mesh.GetFacesBound())
 		{
-			glm::vec3 p1_normal = mesh.GetNormal(face.GetNormalIndex(0) - 1);
-			glm::vec3 p2_normal = mesh.GetNormal(face.GetNormalIndex(1) - 1);
-			glm::vec3 p3_normal = mesh.GetNormal(face.GetNormalIndex(2) - 1);
-			p1_normal *= 69;
-			p2_normal *= 69;
-			p3_normal *= 69;
-			DrawLine2(glm::vec2(p1.x, p1.y), glm::vec2(p1.x + p1_normal.x, p1.y + p1_normal.y), glm::vec3(0, 1, 1));
-			DrawLine2(glm::vec2(p2.x, p2.y), glm::vec2(p2.x + p2_normal.x, p2.y + p2_normal.y), glm::vec3(0, 1, 1));
-			DrawLine2(glm::vec2(p3.x, p3.y), glm::vec2(p3.x + p3_normal.x, p3.y + p3_normal.y), glm::vec3(0, 1, 1));
+			facecolor = glm::vec3((float)rand() / RAND_MAX, (float)rand() / RAND_MAX, (float)rand() / RAND_MAX);
+			//float avg = (p1.z + p2.z + p3.z) / 3;
+			//facecolor = glm::vec3(avg,avg,avg);
+			glm::vec2 left_top = glm::vec2(min_x, max_y);
+			glm::vec2 left_bot = glm::vec2(min_x, min_y);
+			glm::vec2 right_top = glm::vec2(max_x, max_y);
+			glm::vec2 right_bot = glm::vec2(max_x, min_y);
+			DrawLine2(right_top, right_bot, facecolor);
+			DrawLine2(right_top, left_top, facecolor);
+			DrawLine2(left_bot, right_bot, facecolor);
+			DrawLine2(left_top, left_bot, facecolor);
 		}
+
+
 		if (mesh.GetShowAxis() == true)
 		{
 
@@ -770,4 +764,49 @@ void Renderer::DrawWorldAxis(Scene scene, int width, int height)
 	DrawLine2(origin, x_axis, glm::vec3(1, 0, 0));
 	DrawLine2(origin, y_axis, glm::vec3(0, 1, 0));
 	DrawLine2(origin, z_axis, glm::vec3(0, 0, 1));
+}
+
+////////////////////////
+void Renderer::Scan(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, int minx, int maxx, int miny, int maxy, glm::vec3 color)
+{
+	for (int i = minx; i < maxx; i++)
+	{
+		for (int j = miny; j < maxy; j++)
+		{
+			if (Utils::IsInsideTraingle(glm::vec2(i, j), p1, p2, p3))
+			{
+				PutPixel(i, j, color);
+				float z1 = p1.z, z2 = p2.z, z3 = p3.z, A, A1, A2, A3, z;
+
+				A1 = 0.5 * abs(i * p2.y + p2.x * p3.y + p3.x * j - j * p2.x - p2.y * p3.x - p3.y * i);
+				A3 = 0.5 * abs(p1.x * p2.y + p2.x * j + p3.x * p1.y - p1.y * p2.x - p2.y * i - j * p1.x);
+				A2 = 0.5 * abs(p1.x * j + i * p3.y + p3.x * p1.y - p1.y * i - j * p3.x - p3.y * p1.x);
+				// same as in lecture 
+				A = A1 + A2 + A3;
+				z = A1 / A * z1 + A2 / A * z2 + A3 / A * z3;
+				if (z > maxz) {
+					maxz = z;
+				}
+				if (z < minz)
+				{
+					minz = z;
+				}
+				if ((i < viewport_width && j < viewport_height && i>0 && j>0) && z <= z_buffer[Z_INDEX(viewport_width, i, j)])
+				{
+					z_buffer[Z_INDEX(viewport_width, i, j)] = z;
+					temp_color_buffer[Z_INDEX(viewport_width, i, j)] = color;
+				}
+			}
+		}
+	}
+}
+void Renderer::SetViewportWidth(int ViewportWidth)
+{
+	this->viewport_width = ViewportWidth;
+
+}
+
+void Renderer::SetViewportHeight(int ViewportHeight)
+{
+	this->viewport_height = ViewportHeight;
 }

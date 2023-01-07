@@ -82,7 +82,11 @@ public:
 	glm::vec3 color_b = glm::vec3(0,0,0);
 
 	/* local matricies */
-	glm::mat4 local_scale_mat = glm::mat4(1);
+	//glm::mat4 local_scale_mat = glm::mat4(1);
+	glm::mat4 local_scale_mat = { 50,  0,  0,  0,
+		0,  50,  0,  0,
+		0,  0,  25,  0,
+		0,  0,  0,  1 };
 	glm::mat4 local_translate_mat = glm::mat4(1);
 	glm::mat4 local_X_rotation_mat = glm::mat4(1);
 	glm::mat4 local_Y_rotation_mat = glm::mat4(1);
@@ -101,7 +105,7 @@ public:
 	/* local variables of the matriecies */
 	glm::vec3 local_translation = glm::vec3(0,0,0); // (translate_x,translate_y,translate_z)
 	glm::vec3 local_rotation = glm::vec3(0,0,0); // (rotate_x,rotate_y,rotate_z)
-	glm::vec3 local_scale = glm::vec3(1,1,1); // (scale_x,scale_y,scale_z)
+	glm::vec3 local_scale = glm::vec3(20,20,25); // (scale_x,scale_y,scale_z)
 
 	/* world variables of the matriecies */
 	glm::vec3 world_translation = glm::vec3(0, 0, 0); 
@@ -113,6 +117,10 @@ public:
 	bool bounding_box = false;
 	bool show_face_normals = false;
 	bool show_vertex_normals = false;
+
+	//////////////////////////////// part 4 ///////////////////////
+	bool faces_bound = false;
+	bool& GetFacesBound();
 	//void setNormals();
 	////std::vector<glm::vec3> verticesNormals;
 	//std::vector<glm::vec3> FacesNormals;

@@ -2,6 +2,8 @@
 #include "Scene.h"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
+#include "Utils.h"
+#include <vector>
 
 class Renderer
 {
@@ -14,7 +16,7 @@ public:
 	int GetViewportWidth() const;
 	int GetViewportHeight() const;
 	//void Renderer::DrawMeshExtra(MeshModel mesh, std::vector<glm::vec3> vertices, Face& facec, Scene scene, int width, int height);
-	void Renderer::DrawMesh(MeshModel mesh, std::vector<glm::vec3> vertices, std::vector<Face> faces, Scene scene, int width, int height);
+	void Renderer::DrawMesh(MeshModel mesh, std::vector<glm::vec3> vertices, std::vector<Face> faces, Scene scene, int width, int height, int index);
 	void DrawWorldAxis(Scene scene, int width, int height);
 	void Renderer::DrawLocalAxis(MeshModel mesh, Scene scene, int width, int height);
 
@@ -22,6 +24,7 @@ public:
 	void Renderer::DrawVertexNormals(MeshModel mesh, Scene scene, int width, int height);
 	void Renderer::DrawBoundingBoxnew(MeshModel mesh, Scene scene, int width, int height);
 	void Renderer::DrawBoundingBox(MeshModel& model);
+	void DrawColoredTriangle(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3);
 private:
 	void PutPixel(const int i, const int j, const glm::vec3& color);
 	void DrawLine(const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& color); //vec3
@@ -34,10 +37,19 @@ private:
 	void CreateBuffers(int w, int h);
 	void CreateOpenGLBuffer();
 	void InitOpenGLRendering();
+	void Renderer::Scan(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, int minx, int maxx, int miny, int maxy, glm::vec3 color);
+	void Renderer::SetViewportWidth(int ViewportWidth);
+	void Renderer::SetViewportHeight(int ViewportHeight);
 
+	float* color_buffer;
+	float* Z_buffer;
+	std::vector<glm::vec3> temp_color_buffer;
+	std::vector<float> z_buffer;
 	float* color_buffer_;
-	int viewport_width_;
-	int viewport_height_;
+	int viewport_width;
+	int viewport_height;
 	GLuint gl_screen_tex_;
 	GLuint gl_screen_vtc_;
+	float maxz = -1 * INFINITY;
+	float minz = INFINITY;
 };

@@ -11,4 +11,5 @@ public:
 	static std::shared_ptr<MeshModel> LoadMeshModel(const std::string& filePath);
 	static void Utils::PrintMeshModel(const std::string& filePath);
 	static std::string GetFileName(const std::string& filePath);
+	static bool IsInsideTraingle(const glm::ivec2& curr_point, const glm::ivec2& p1, const glm::ivec2& p2, const glm::ivec2& p3);
 };
