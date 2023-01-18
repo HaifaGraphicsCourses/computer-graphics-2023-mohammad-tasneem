@@ -5,7 +5,8 @@
 
 Scene::Scene() :
 	active_camera_index_(0),
-	active_model_index_(0)
+	active_model_index_(0),
+	active_light_index_(0)
 {
 
 }
@@ -13,6 +14,25 @@ Scene::Scene() :
 void Scene::AddModel(const std::shared_ptr<MeshModel>& mesh_model)
 {
 	mesh_models_.push_back(mesh_model);
+	mesh_models_.back()->setNormals();
+
+	// default materials for 1st model (blue)
+	if (mesh_models_.size() == 1)
+	{
+		glm::vec3 color(0.5f, 0.5f, 1.0f);
+		mesh_models_.back()->GetAmbient() = color;
+		mesh_models_.back()->GetDiffuse() = color;
+		mesh_models_.back()->GetSpecular() = color;
+	}
+
+	// default materials for 2nd model (green)
+	if (mesh_models_.size() == 2)
+	{
+		glm::vec3 color(0.5f, 1.0f, 0.5f);
+		mesh_models_.back()->GetAmbient() = color;
+		mesh_models_.back()->GetDiffuse() = color;
+		mesh_models_.back()->GetSpecular() = color;
+	}
 }
 
 int Scene::GetModelCount() const
@@ -95,4 +115,69 @@ int Scene::getiscolored()
 void Scene::setiscolored(int iscolored)
 {
 	this->is_colored = iscolored;
+}
+
+int Scene::GetLightCount() const
+{
+	return lights_.size();
+}
+
+Light& Scene::GetLight(int index)
+{
+	return *lights_[index];
+}
+
+Light& Scene::GetActiveLight()
+{
+	return *lights_[active_light_index_];
+}
+
+void Scene::SetActiveLightIndex(int index)
+{
+	active_light_index_ = index;
+}
+
+void Scene::AddLight(const std::shared_ptr<Light>& light)
+{
+	lights_.push_back(light);
+
+	// default properties for 1st light (red)
+	if (lights_.size() == 1)
+	{
+		lights_.back()->GetPosition() = glm::vec3(-1, 2, 0);
+		glm::vec3 color(1.0f, 0.5f, 0.5f);
+		lights_.back()->GetAmbient() = color * 0.5f;
+		lights_.back()->GetDiffuse() = color * 1.0f;
+		lights_.back()->GetSpecular() = glm::vec3(1, 1, 1);
+	}
+
+	// default properties for 2nd light (yellow)
+	if (lights_.size() == 2)
+	{
+		lights_.back()->GetPosition() = glm::vec3(1, 2, 0);
+		glm::vec3 color(1.0f, 1.0f, 0.5f);
+		lights_.back()->GetAmbient() = color * 0.5f;
+		lights_.back()->GetDiffuse() = color * 1.0f;
+		lights_.back()->GetSpecular() = glm::vec3(1, 1, 1);
+	}
+}
+
+bool& Scene::GetGouraudShading()
+{
+	return gouraudShading;
+}
+
+bool& Scene::GetUseAmbientLighting()
+{
+	return useAmbientLighting;
+}
+
+bool& Scene::GetUseDiffuseLighting()
+{
+	return useDiffuseLighting;
+}
+
+bool& Scene::GetUseSpecularLighting()
+{
+	return useSpecularLighting;
 }

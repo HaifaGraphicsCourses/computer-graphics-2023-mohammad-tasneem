@@ -16,7 +16,10 @@ public:
 	int GetViewportWidth() const;
 	int GetViewportHeight() const;
 	//void Renderer::DrawMeshExtra(MeshModel mesh, std::vector<glm::vec3> vertices, Face& facec, Scene scene, int width, int height);
-	void Renderer::DrawMesh(MeshModel mesh, std::vector<glm::vec3> vertices, std::vector<Face> faces, Scene scene, int width, int height, int index);
+	glm::vec3 ComputeAmbientLighting(Scene& scene, MeshModel& mesh, glm::vec3 position, glm::vec3 normal);
+	glm::vec3 ComputeDiffuseLighting(Scene& scene, MeshModel& mesh, glm::vec3 position, glm::vec3 normal);
+	glm::vec3 ComputeSpecularLighting(Scene& scene, MeshModel& mesh, glm::vec3 position, glm::vec3 normal, glm::vec3 cameraPosition);
+	void Renderer::DrawMesh(MeshModel& mesh, Scene& scene, int width, int height, int index);
 	void DrawWorldAxis(Scene scene, int width, int height);
 	void Renderer::DrawLocalAxis(MeshModel mesh, Scene scene, int width, int height);
 
@@ -37,15 +40,12 @@ private:
 	void CreateBuffers(int w, int h);
 	void CreateOpenGLBuffer();
 	void InitOpenGLRendering();
-	void Renderer::Scan(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, int minx, int maxx, int miny, int maxy, glm::vec3 color);
+	void Renderer::Scan(MeshModel& mesh, Scene& scene, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, int minx, int maxx, int miny, int maxy, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 color1, glm::vec3 color2, glm::vec3 color3, glm::vec3 normal1, glm::vec3 normal2, glm::vec3 normal3, glm::vec3 cameraPosition);
 	void Renderer::SetViewportWidth(int ViewportWidth);
 	void Renderer::SetViewportHeight(int ViewportHeight);
 
 	float* color_buffer;
-	float* Z_buffer;
-	std::vector<glm::vec3> temp_color_buffer;
 	std::vector<float> z_buffer;
-	float* color_buffer_;
 	int viewport_width;
 	int viewport_height;
 	GLuint gl_screen_tex_;

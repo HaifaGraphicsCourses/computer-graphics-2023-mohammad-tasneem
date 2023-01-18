@@ -5,7 +5,10 @@ MeshModel::MeshModel(std::vector<Face> faces, std::vector<glm::vec3> vertices, s
 	vertices_(vertices),
 	normals_(normals),
 	model_name_(model_name),
-	color(glm::vec3(1, 1, 1))
+	color(glm::vec3(1, 1, 1)),
+	ambient(1, 1, 1),
+	diffuse(1, 1, 1),
+	specular(1, 1, 1)
 {
 	scaleLoadedMeshModel();
 	setBoundingBox();
@@ -174,14 +177,14 @@ glm::mat4x4 MeshModel::Y_RotationMatrix(glm::vec3 v)
 }
 glm::mat4x4 MeshModel::Z_RotationMatrix(glm::vec3 v)
 {
-		float k = float(M_PI) / float(180);
-		float a = v[2];
-		return glm::mat4x4{
-			glm::cos(a * k), -1 * glm::sin(a * k), 0, 0,
-			glm::sin(a * k), glm::cos(a * k), 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1
-		};
+	float k = float(M_PI) / float(180);
+	float a = v[2];
+	return glm::mat4x4{
+		glm::cos(a * k), -1 * glm::sin(a * k), 0, 0,
+		glm::sin(a * k), glm::cos(a * k), 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1
+	};
 }
 void MeshModel::setBoundingBox()
 {
@@ -250,6 +253,10 @@ void MeshModel::SetShowVertexNormals(bool flag)
 bool MeshModel::GetShowVertexNormals()
 {
 	return this->show_vertex_normals;
+}
+bool& MeshModel::GetShowLightDirections()
+{
+	return show_light_directions;
 }
 glm::vec3 MeshModel::GetNormal(int index)
 {
@@ -320,45 +327,60 @@ const glm::mat4 MeshModel::GetRotatexMatwor()const
 {
 	return this->world_X_rotation_mat;
 }
-/*
+
 void MeshModel::setNormals()
 {
 	int i = 0;
 	for (; i < vertices_.size(); i++)
 	{
-		facesPerVertex.push_back(0);
 		verticesNormals.push_back(glm::vec3(0, 0, 0));
 	}
 
 	for (i = 0; i < faces_.size(); i++)
 	{
-		facesPerVertex[faces_[i].GetVertexIndex(0) - 1]++;
 		verticesNormals[faces_[i].GetVertexIndex(0) - 1] += normals_[faces_[i].GetNormalIndex(0) - 1];
-
-		facesPerVertex[faces_[i].GetVertexIndex(1) - 1]++;
 		verticesNormals[faces_[i].GetVertexIndex(1) - 1] += normals_[faces_[i].GetNormalIndex(1) - 1];
-
-		facesPerVertex[faces_[i].GetVertexIndex(2) - 1]++;
 		verticesNormals[faces_[i].GetVertexIndex(2) - 1] += normals_[faces_[i].GetNormalIndex(2) - 1];
 
-		FacesNormals.push_back(glm::vec3(0, 0, 0)); /// this one is for normal per face
+		facesCenters.push_back(glm::vec3(0, 0, 0));
+		facesNormals.push_back(glm::vec3(0, 0, 0)); /// this one is for normal per face
 	}
 	for (i = 0; i < vertices_.size(); i++)
 	{
-		verticesNormals[i] /= facesPerVertex[i];
+		verticesNormals[i] = glm::normalize(verticesNormals[i]);
 	}
 
 	for (i = 0; i < faces_.size(); i++)
 	{
-		FacesNormals[i] += normals_[faces_[i].GetNormalIndex(0) - 1];
-		FacesNormals[i] += normals_[faces_[i].GetNormalIndex(1) - 1];
-		FacesNormals[i] += normals_[faces_[i].GetNormalIndex(2) - 1];
-		FacesNormals[i] /= 3.0f;
+		facesCenters[i] += vertices_[faces_[i].GetVertexIndex(0) - 1];
+		facesCenters[i] += vertices_[faces_[i].GetVertexIndex(1) - 1];
+		facesCenters[i] += vertices_[faces_[i].GetVertexIndex(2) - 1];
+		facesCenters[i] /= 3.0f;
+
+		facesNormals[i] += normals_[faces_[i].GetNormalIndex(0) - 1];
+		facesNormals[i] += normals_[faces_[i].GetNormalIndex(1) - 1];
+		facesNormals[i] += normals_[faces_[i].GetNormalIndex(2) - 1];
+		facesNormals[i] = glm::normalize(facesNormals[i]);
 	}
 	return;
+}
 
-} */
 bool& MeshModel::GetFacesBound()
 {
 	return faces_bound;
+}
+
+glm::vec3& MeshModel::GetAmbient()
+{
+	return ambient;
+}
+
+glm::vec3& MeshModel::GetDiffuse()
+{
+	return diffuse;
+}
+
+glm::vec3& MeshModel::GetSpecular()
+{
+	return specular;
 }

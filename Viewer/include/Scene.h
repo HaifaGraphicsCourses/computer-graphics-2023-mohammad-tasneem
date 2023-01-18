@@ -5,6 +5,7 @@
 
 #include "Camera.h"
 #include "MeshModel.h"
+#include "Light.h"
 
 class Scene {
 public:
@@ -32,16 +33,32 @@ public:
 	void SetDrawCamera(bool flag);
 	bool GetDrawCamera()const;
 	void Scene::AddCameranew(const std::shared_ptr<Camera>& camera);
-	int is_colored = 0;
+	int is_colored = 1;
 	int getiscolored();
 	void setiscolored(int iscolored);
+
+	int GetLightCount() const;
+	Light& GetLight(int index);
+	Light& GetActiveLight();
+	void SetActiveLightIndex(int index);
+	void AddLight(const std::shared_ptr<Light>& light);
+	bool gouraudShading = true;
+	bool& GetGouraudShading();
+	bool useAmbientLighting = true;
+	bool useDiffuseLighting = true;
+	bool useSpecularLighting = true;
+	bool& GetUseAmbientLighting();
+	bool& GetUseDiffuseLighting();
+	bool& GetUseSpecularLighting();
 
 private:
 	std::vector<std::shared_ptr<MeshModel>> mesh_models_;
 	std::vector<std::shared_ptr<Camera>> cameras_;
+	std::vector<std::shared_ptr<Light>> lights_;
 
 	int active_camera_index_;
 	int active_model_index_;
+	int active_light_index_;
 
 	bool draw_camera = false;
 };
