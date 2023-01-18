@@ -45,12 +45,13 @@ public:
 	void SetWorldRotateMatrix(float rotate_x, float  rotate_y, float  rotate_z);//
 	void SetShowAxis(bool flag);
 	bool GetShowAxis();
-	void SetBoundedBox(bool flag); 
+	void SetBoundedBox(bool flag);
 	bool GetBoundedBox();
 	void SetShowFaceNormals(bool flag);
 	bool GetShowFaceNormals();
 	void SetShowVertexNormals(bool flag);
 	bool GetShowVertexNormals();
+	bool& GetShowLightDirections();
 	glm::vec3 GetNormal(int index);
 
 
@@ -65,7 +66,7 @@ public:
 	glm::mat4x4 worldTransform;
 	glm::mat4x4 localTransform;
 
-	
+
 
 	std::vector<Face> faces_;
 	std::vector<glm::vec3> vertices_;
@@ -79,14 +80,10 @@ public:
 	float max_x;
 	float max_y;
 	float max_z;
-	glm::vec3 color_b = glm::vec3(0,0,0);
+	glm::vec3 color_b = glm::vec3(0, 0, 0);
 
 	/* local matricies */
-	//glm::mat4 local_scale_mat = glm::mat4(1);
-	glm::mat4 local_scale_mat = { 50,  0,  0,  0,
-		0,  50,  0,  0,
-		0,  0,  25,  0,
-		0,  0,  0,  1 };
+	glm::mat4 local_scale_mat = glm::mat4(1);
 	glm::mat4 local_translate_mat = glm::mat4(1);
 	glm::mat4 local_X_rotation_mat = glm::mat4(1);
 	glm::mat4 local_Y_rotation_mat = glm::mat4(1);
@@ -103,27 +100,37 @@ public:
 	bool world_local = false;
 
 	/* local variables of the matriecies */
-	glm::vec3 local_translation = glm::vec3(0,0,0); // (translate_x,translate_y,translate_z)
-	glm::vec3 local_rotation = glm::vec3(0,0,0); // (rotate_x,rotate_y,rotate_z)
-	glm::vec3 local_scale = glm::vec3(20,20,25); // (scale_x,scale_y,scale_z)
+	glm::vec3 local_translation = glm::vec3(0, 0, 0); // (translate_x,translate_y,translate_z)
+	glm::vec3 local_rotation = glm::vec3(0, 0, 0); // (rotate_x,rotate_y,rotate_z)
+	glm::vec3 local_scale = glm::vec3(1, 1, 1); // (scale_x,scale_y,scale_z)
 
 	/* world variables of the matriecies */
-	glm::vec3 world_translation = glm::vec3(0, 0, 0); 
-	glm::vec3 world_rotation = glm::vec3(0, 0, 0); 
-	glm::vec3 world_scale = glm::vec3(1, 1, 1); 
+	glm::vec3 world_translation = glm::vec3(0, 0, 0);
+	glm::vec3 world_rotation = glm::vec3(0, 0, 0);
+	glm::vec3 world_scale = glm::vec3(1, 1, 1);
 
 
 	bool show_axis = false;
 	bool bounding_box = false;
 	bool show_face_normals = false;
 	bool show_vertex_normals = false;
+	bool show_light_directions = false;
 
 	//////////////////////////////// part 4 ///////////////////////
 	bool faces_bound = false;
 	bool& GetFacesBound();
-	//void setNormals();
-	////std::vector<glm::vec3> verticesNormals;
-	//std::vector<glm::vec3> FacesNormals;
-	//std::vector<int> facesPerVertex;
+	void setNormals();
+	std::vector<glm::vec3> verticesNormals;
+	std::vector<glm::vec3> facesCenters;
+	std::vector<glm::vec3> facesNormals;
 
+	glm::vec3& GetAmbient();
+	glm::vec3& GetDiffuse();
+	glm::vec3& GetSpecular();
+
+private:
+	// material
+	glm::vec3 ambient;
+	glm::vec3 diffuse;
+	glm::vec3 specular;
 };
