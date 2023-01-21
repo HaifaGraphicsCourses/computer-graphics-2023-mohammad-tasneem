@@ -8,7 +8,12 @@ Scene::Scene() :
 	active_model_index_(0),
 	active_light_index_(0)
 {
-
+	// load mesh model for rendering light sources
+	std::string path = "..\\Data\\demo.obj";
+	light_model_ = Utils::LoadMeshModel(path);
+	if (light_model_->vertices_.empty())
+		std::cout << std::endl << "Error loading light source model: " << path << std::endl;
+	else light_model_->setNormals();
 }
 
 void Scene::AddModel(const std::shared_ptr<MeshModel>& mesh_model)
@@ -132,6 +137,11 @@ Light& Scene::GetActiveLight()
 	return *lights_[active_light_index_];
 }
 
+MeshModel& Scene::GetLightModel() const
+{
+	return *light_model_;
+}
+
 void Scene::SetActiveLightIndex(int index)
 {
 	active_light_index_ = index;
@@ -144,7 +154,7 @@ void Scene::AddLight(const std::shared_ptr<Light>& light)
 	// default properties for 1st light (red)
 	if (lights_.size() == 1)
 	{
-		lights_.back()->GetPosition() = glm::vec3(-1, 2, 0);
+		lights_.back()->GetPosition() = glm::vec3(-1, 1, 0);
 		glm::vec3 color(1.0f, 0.5f, 0.5f);
 		lights_.back()->GetAmbient() = color * 0.5f;
 		lights_.back()->GetDiffuse() = color * 1.0f;
@@ -154,7 +164,7 @@ void Scene::AddLight(const std::shared_ptr<Light>& light)
 	// default properties for 2nd light (yellow)
 	if (lights_.size() == 2)
 	{
-		lights_.back()->GetPosition() = glm::vec3(1, 2, 0);
+		lights_.back()->GetPosition() = glm::vec3(1, 1, 0);
 		glm::vec3 color(1.0f, 1.0f, 0.5f);
 		lights_.back()->GetAmbient() = color * 0.5f;
 		lights_.back()->GetDiffuse() = color * 1.0f;

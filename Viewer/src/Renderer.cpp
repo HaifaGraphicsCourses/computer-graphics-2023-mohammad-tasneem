@@ -284,6 +284,8 @@ void Renderer::Render(Scene& scene)
 	int half_width = viewport_width / 2;
 	int half_height = viewport_height / 2;
 	//DrawWorldAxis(scene, half_width, half_height);
+
+	// draw models
 	if (scene.GetModelCount() > 0)
 	{
 
@@ -292,13 +294,28 @@ void Renderer::Render(Scene& scene)
 		{
 			MeshModel curr_mesh = scene.GetModel(i);
 			//DrawMeshModel(curr_mesh,curr_mesh.GetTranformationMat(),  scene);
-			DrawMesh(curr_mesh, scene, half_width, half_height, i);
+			DrawMesh(curr_mesh, scene, half_width, half_height, false);
 		}
 
 		//MeshModel curr_mesh = scene.GetActiveModel();
 		//DrawMeshModel(curr_mesh, curr_mesh.GetTranformationMat(), scene);
 		//DrawMesh(curr_mesh, curr_mesh.GetVerticesList(), curr_mesh.GetFacesList(), scene, half_width, half_height,2);
 	}
+
+	// draw light sources
+	for (int i = 0; i < scene.GetLightCount(); i++)
+	{
+		// copy light position to light source model position
+		glm::vec3 pos = scene.GetLight(i).GetPosition();
+		scene.GetLightModel().SetWorldTranslateMatrix(pos.x, pos.y, pos.z);
+
+		// set light source model size
+		float size = 0.4f;
+		scene.GetLightModel().SetWorldScaleMatrix(size, size, size);
+
+		DrawMesh(scene.GetLightModel(), scene, half_width, half_height, true);
+	}
+
 	//glm::vec3 randomcolor = glm::vec3(1,0,0);
 	Scene scene1 = scene;
 	if (scene1.getiscolored())
@@ -622,16 +639,18 @@ glm::vec3 Renderer::ComputeSpecularLighting(Scene& scene, MeshModel& mesh, glm::
 		float specular = glm::dot(reflectedLightDirection, cameraDirection);
 		if (specular > 0)
 		{
-			lighting += light.GetSpecular() * mesh.GetSpecular() * 
-				glm::vec3(glm::pow(specular, 16), glm::pow(specular, 16), glm::pow(specular, 16));
+			lighting += light.GetSpecular() * mesh.GetSpecular() * glm::pow(specular, 16.0f);
 		}
 	}
 
 	return lighting;
 }
 
-void Renderer::DrawMesh(MeshModel& mesh, Scene& scene, int width, int height, int index)
+void Renderer::DrawMesh(MeshModel& mesh, Scene& scene, int width, int height, bool isLight)
 {
+	//bool isColored = scene.getiscolored() && !isLight;
+	bool isColored = scene.getiscolored() || isLight;
+
 	// tranformation matrices for positions and normals
 	glm::mat4 matrix = mesh.GetTranformationMat();
 	glm::mat3 normal_matrix = glm::inverse(glm::transpose(matrix));
@@ -645,7 +664,7 @@ void Renderer::DrawMesh(MeshModel& mesh, Scene& scene, int width, int height, in
 	std::vector<glm::vec3> vertexPositions(mesh.vertices_.size());
 	std::vector<glm::vec3> vertexNormals(mesh.vertices_.size());
 	std::vector<glm::vec3> vertexColors(mesh.vertices_.size());
-	if (scene.getiscolored())
+	if (isColored)
 	{
 		// compute shading for each face
 		for (int i = 0; i < faceColors.size(); i++)
@@ -718,7 +737,7 @@ void Renderer::DrawMesh(MeshModel& mesh, Scene& scene, int width, int height, in
 		int min_y = std::min(p1.y, std::min(p2.y, p3.y));
 
 		//draw faces of the mesh 
-		if (!scene.getiscolored())
+		if (!isColored)
 		{
 			DrawLine2(glm::vec2(p1.x, p1.y), glm::vec2(p2.x, p2.y), glm::vec3(0, 0, 0));
 			DrawLine2(glm::vec2(p1.x, p1.y), glm::vec2(p3.x, p3.y), glm::vec3(0, 0, 0));
@@ -726,7 +745,7 @@ void Renderer::DrawMesh(MeshModel& mesh, Scene& scene, int width, int height, in
 		}
 
 		// if scene is colored , color each mesh with appropriate color to look different
-		if (scene.getiscolored())
+		if (isColored)
 		{
 			glm::vec3 v1 = vertexPositions[face.GetVertexIndex(0) - 1];
 			glm::vec3 v2 = vertexPositions[face.GetVertexIndex(1) - 1];
