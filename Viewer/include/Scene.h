@@ -40,6 +40,7 @@ public:
 	int GetLightCount() const;
 	Light& GetLight(int index);
 	Light& GetActiveLight();
+	MeshModel& GetLightModel() const;
 	void SetActiveLightIndex(int index);
 	void AddLight(const std::shared_ptr<Light>& light);
 	bool gouraudShading = true;
@@ -55,6 +56,7 @@ private:
 	std::vector<std::shared_ptr<MeshModel>> mesh_models_;
 	std::vector<std::shared_ptr<Camera>> cameras_;
 	std::vector<std::shared_ptr<Light>> lights_;
+	std::shared_ptr<MeshModel> light_model_;
 
 	int active_camera_index_;
 	int active_model_index_;

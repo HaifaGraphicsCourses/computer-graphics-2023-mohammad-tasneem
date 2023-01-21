@@ -19,7 +19,7 @@ public:
 	glm::vec3 ComputeAmbientLighting(Scene& scene, MeshModel& mesh, glm::vec3 position, glm::vec3 normal);
 	glm::vec3 ComputeDiffuseLighting(Scene& scene, MeshModel& mesh, glm::vec3 position, glm::vec3 normal);
 	glm::vec3 ComputeSpecularLighting(Scene& scene, MeshModel& mesh, glm::vec3 position, glm::vec3 normal, glm::vec3 cameraPosition);
-	void Renderer::DrawMesh(MeshModel& mesh, Scene& scene, int width, int height, int index);
+	void Renderer::DrawMesh(MeshModel& mesh, Scene& scene, int width, int height, bool isLight);
 	void DrawWorldAxis(Scene scene, int width, int height);
 	void Renderer::DrawLocalAxis(MeshModel mesh, Scene scene, int width, int height);
 
