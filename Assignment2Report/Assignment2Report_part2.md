@@ -1,45 +1,52 @@
 
-Task 1.
-Ambient lighting is implemented in Renderer::ComputeAmbientLighting().
-The light ambient color is multiplied by the material ambient color.
-Therefore, the results are mixed.
-- blue bunny under red light looks purple.
-- green pawn  under red light looks yellow.
+# Assignement 2_part 2
 
-  ![enter image description here](Task1.png)
- 
-Task 2.
-Diffuse lighting is implemented in Renderer::ComputeDiffuseLighting().
-The light diffuse color is multiplied by the material diffuse color
-and by the dot product between light direction and normal.
-For flat shading, a single shaded color is used for the entire face,
-resulting in a faceted appearance.
-![enter image description here](Task2.png)
- 
-Task 3.
-For Gouraud shading, each vertex has its own shaded color.
-The colors are then interpolated over the face,
-resulting in a smooth appearance.
-![enter image description here](Task3.png)
- 
-Task 4.
-Light directions and reflected light directions are shown as red and green lines.
-This is implemented in Renderer::DrawMesh().
-this image shows this with a simple model to avoid overcrowding.
-![enter image description here](Task4.png)
- 
-Task 5.
-Specular lighting is implemented in Renderer::ComputeSpecularLighting().
-The light specular color is multiplied by the material specular color
-and by the dot product between reflected light direction and camera direction.
-The dot product is raised to a high power for narrower highlights.
-Phong shading is achieved by interpolating positions and normals
-over the face in Renderer::Scan().
-![enter image description here](Task5.png)
- 
-Task 6.
-An example of two lights is shown in the image below.
-Ambient light colors are reduced here to avoid too bright lighting.
-Note that Scene::AddModel() and Scene::AddLight() set default properties
-for new models and lights to reasonable values
-![enter image description here](Task6.png)
+___
+## 1.Ambient Light.
+we used the formula that calculate ambient light: (Ia=Ka*La)
+as shown in the video that is attached, no matter where the light is located, the color does not change (this is the definition of ambient light)
+the color of the model was kind of blue : color(0.5f, 0.5f, 1.0f)
+and the color of the ambient light was (by default): color(1.0f, 0.5f, 0.5f)
+the light ambient is multiplied by the material ambient color so got the results:
+
+shown in video : (ambient_light)
+
+
+___
+## 2.FlatShading + Diffuse
+we calculated the difuuse light according to the formula we in lecture  : Id=Kd*(l.dot(n))*Ld
+and then we imply flat shading on the scene
+shown in image "diffuse"
+![enter image description here](diffuse.jpeg)
+
+
+___
+## 3.Gouraud Shading
+firstly we calculates the color for each vertex. and then for face i: for each pixel inside calculate by iterpolation 
+its visible that guard is more smooth than flat shading (which decides one color per face)
+shown in video "guard_shading"
+![enter image description here](Guard.jpeg)
+
+
+
+___
+## 4.Reflected Rays.
+shown in images "Reflection1" + "Reflection2"
+![enter image description here](Reflection1.jpeg)
+![enter image description here](Reflection2.jpeg)
+
+
+___
+## 5.PhongShading with specular light
+the light specular color is multiplied by the material specular color and by dot production between reflected light direction and camera direction.
+and the phong shading is acheived by interpolating normals over each face in the model (this was implemented by a specific function called "scan" that calculates interpolation  for normals in each face )
+shown in image: "phong _shading"
+![enter image description here](phong _shading.jpeg)
+
+
+___
+## 6. Show diffrent models and lighs
+in addition to the previous pictures here attached additional video and image for multi models and multi lights
+video : multi_models
+image : multi _lights
+![enter image description here](multi_lights.jpeg)
