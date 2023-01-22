@@ -49,7 +49,7 @@ ___
 the light specular color is multiplied by the material specular color and by dot production between reflected light direction and camera direction.
 and the phong shading is acheived by interpolating normals over each face in the model (this was implemented by a specific function called "scan" that calculates interpolation  for normals in each face )
 shown in image: "phong _shading"
-![enter image description here](phong _shading.jpeg)
+![enter image description here](phong_shading.jpeg)
 
 
 ___
