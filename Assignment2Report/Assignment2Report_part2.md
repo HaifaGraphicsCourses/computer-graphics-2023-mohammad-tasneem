@@ -12,6 +12,10 @@ the light ambient is multiplied by the material ambient color so got the results
 shown in video : (ambient_light)
 
 
+https://user-images.githubusercontent.com/82311533/213923493-cea7c253-7bc0-4f24-a93d-4dde7688457e.mp4
+
+
+
 ___
 ## 2.FlatShading + Diffuse
 we calculated the difuuse light according to the formula we in lecture  : Id=Kd*(l.dot(n))*Ld
@@ -26,6 +30,10 @@ firstly we calculates the color for each vertex. and then for face i: for each p
 its visible that guard is more smooth than flat shading (which decides one color per face)
 shown in video "guard_shading"
 ![enter image description here](Guard.jpeg)
+
+
+https://user-images.githubusercontent.com/82311533/213923506-e48033e6-3374-403a-bde3-9f1445a921dd.mp4
+
 
 
 
@@ -50,3 +58,6 @@ in addition to the previous pictures here attached additional video and image fo
 video : multi_models
 image : multi _lights
 ![enter image description here](multi_lights.jpeg)
+
+https://user-images.githubusercontent.com/82311533/213923527-9066bc84-2526-472b-97b2-51dad0a87fd9.mp4
+
