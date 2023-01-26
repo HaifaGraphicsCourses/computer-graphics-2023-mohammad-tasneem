@@ -5,25 +5,26 @@
     we keep two fields (for each axis x and y) called min_x/max_x(same in y : min_y/max_y) as we have done before to draw the bounding box
     and draw line between them to draw the bounding box with appropriate color.
     
-    ![Assign2Q1](https://user-images.githubusercontent.com/82311533/211170446-b1d61a9e-0227-4684-a5a2-d13001e98b43.jpeg)
-    
-    
-
-![enter image description here](Assign2Q1.jpeg)
+    ![unnamed](https://user-images.githubusercontent.com/82311533/214924092-cca01d8d-4d5d-4e0a-87ca-abdf1424551a.png)
 
 
 
 3.Changing the DrawTriangle function such that fills the entire triangle.
-    ![enter image description here](Assign2Q3.jpeg)
+    
+![2](https://user-images.githubusercontent.com/82311533/214924647-94861404-80a8-4351-a5fc-a7878f961f7c.png)
 
 4.Implement the z-buffer algorithm
     in pictures which are attached below we can see that the objects looks more obvios (white light) in the close side 
     and more dark (black) in the far one.
     shown in images:
-![enter image description here](Assign2Q41.jpeg)
-![enter image description here](Assign2Q42.jpeg) 
-![enter image description here](Assign2Q43.jpeg)
-![enter image description here](Assign2Q44.jpeg)
+![overlapping1](https://user-images.githubusercontent.com/82311533/214924724-66bce37d-9708-42f3-a70e-32ce64c5fbd4.png)
+![overlapping2](https://user-images.githubusercontent.com/82311533/214924750-af95777d-ba47-4518-8755-17eb55880c53.png)
+![z_buffer1](https://user-images.githubusercontent.com/82311533/214924775-cf4eac51-dca5-4431-b7a5-c248b6b5b5f0.png)
+![z_buffer2](https://user-images.githubusercontent.com/82311533/214924785-95dce31f-2191-4c83-a852-54f9b8b31d96.png)
+![z_buffer3](https://user-images.githubusercontent.com/82311533/214924795-cef0a357-f9e3-4276-ab75-42a89c82f276.png)
+
+
+
 
 
 
