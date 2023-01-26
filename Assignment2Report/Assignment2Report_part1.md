@@ -5,7 +5,7 @@
     we keep two fields (for each axis x and y) called min_x/max_x(same in y : min_y/max_y) as we have done before to draw the bounding box
     and draw line between them to draw the bounding box with appropriate color.
     
-    ![unnamed](https://user-images.githubusercontent.com/82311533/214924092-cca01d8d-4d5d-4e0a-87ca-abdf1424551a.png)
+![1](https://user-images.githubusercontent.com/82311533/214925006-76cdf018-e85d-404e-873d-446f5b217f8f.png)
 
 
 
