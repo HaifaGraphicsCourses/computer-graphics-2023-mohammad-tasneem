@@ -58,49 +58,51 @@ std::shared_ptr<MeshModel> Utils::LoadMeshModel(const std::string& filePath)
 	std::vector<Face> faces;
 	std::vector<glm::vec3> vertices;
 	std::vector<glm::vec3> normals;
+	std::vector<glm::vec2> textureCoords;
 	std::ifstream ifile(filePath.c_str());
 
 	// while not end of file
-	while (!ifile.eof())
-	{
-		// get line
-		std::string curLine;
-		std::getline(ifile, curLine);
+	if (ifile)
+		while (!ifile.eof())
+		{
+			// get line
+			std::string curLine;
+			std::getline(ifile, curLine);
 
-		// read the type of the line
-		std::istringstream issLine(curLine);
-		std::string lineType;
+			// read the type of the line
+			std::istringstream issLine(curLine);
+			std::string lineType;
 
-		issLine >> std::ws >> lineType;
+			issLine >> std::ws >> lineType;
 
-		// based on the type parse data
-		if (lineType == "v")
-		{
-			vertices.push_back(Utils::Vec3fFromStream(issLine));
+			// based on the type parse data
+			if (lineType == "v")
+			{
+				vertices.push_back(Utils::Vec3fFromStream(issLine));
+			}
+			else if (lineType == "vn")
+			{
+				normals.push_back(Utils::Vec3fFromStream(issLine));
+			}
+			else if (lineType == "vt")
+			{
+				textureCoords.push_back(Utils::Vec2fFromStream(issLine));
+			}
+			else if (lineType == "f")
+			{
+				faces.push_back(Face(issLine));
+			}
+			else if (lineType == "#" || lineType == "")
+			{
+				// comment / empty line
+			}
+			else
+			{
+				std::cout << "Found unknown line Type \"" << lineType << "\"";
+			}
 		}
-		else if (lineType == "vn")
-		{
-			normals.push_back(Utils::Vec3fFromStream(issLine));
-		}
-		else if (lineType == "vt")
-		{
-			// TODO: Handle texture coordinates
-		}
-		else if (lineType == "f")
-		{
-			faces.push_back(Face(issLine));
-		}
-		else if (lineType == "#" || lineType == "")
-		{
-			// comment / empty line
-		}
-		else
-		{
-			std::cout << "Found unknown line Type \"" << lineType << "\"";
-		}
-	}
 
-	return std::make_shared<MeshModel>(faces, vertices, normals, Utils::GetFileName(filePath));
+	return std::make_shared<MeshModel>(faces, vertices, normals, textureCoords, Utils::GetFileName(filePath));
 }
 
 std::string Utils::GetFileName(const std::string& filePath)
@@ -137,19 +139,4 @@ std::string Utils::GetFileName(const std::string& filePath)
 	}
 
 	return filePath.substr(index + 1, len - index);
-}
-bool Utils::IsInsideTraingle(const glm::ivec2& curr_point, const glm::ivec2& p1, const glm::ivec2& p2, const glm::ivec2& p3)
-{
-	float s = (p1.x - p3.x) * (curr_point.y - p3.y) - (p1.y - p3.y) * (curr_point.x - p3.x);
-	float t = (p2.x - p1.x) * (curr_point.y - p1.y) - (p2.y - p1.y) * (curr_point.x - p1.x);
-
-	if ((s < 0) != (t < 0) && s != 0 && t != 0)
-		return false;
-
-	float k = (p3.x - p2.x) * (curr_point.y - p2.y) - (p3.y - p2.y) * (curr_point.x - p2.x);
-
-	if (k == 0 || (k < 0) == (s + t <= 0))
-		return true;
-
-	return false;
 }

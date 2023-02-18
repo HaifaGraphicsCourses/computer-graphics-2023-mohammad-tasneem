@@ -63,67 +63,67 @@ string ReadShaderSource(const string& shaderFile)
 GLuint
 InitShader(const string& vShaderFile, const string& fShaderFile)
 {
-    struct Shader {
-	string			filename;
-	GLenum			type;
-	const GLchar*	source;
-    } 
+	struct Shader {
+		string			filename;
+		GLenum			type;
+		const GLchar* source;
+	}
 	shaders[2] = {
 					{ vShaderFile, GL_VERTEX_SHADER, NULL },
 					{ fShaderFile, GL_FRAGMENT_SHADER, NULL }
-				 };
+	};
 
-    GLuint program = glCreateProgram();
-    
-    for ( int i = 0; i < 2; ++i ) {
+	GLuint program = glCreateProgram();
+
+	for (int i = 0; i < 2; ++i) {
 		Shader& s = shaders[i];
 		// looks unnecessary, but makes sure opengl doesn't get dangling pointers
 		// https://stackoverflow.com/questions/10877386/opengl-shader-compilation-errors-unexpected-undefined-at-token-undefined
 		string contents = ReadShaderSource(s.filename);
 		s.source = contents.c_str();
-	
-		GLuint shader = glCreateShader( s.type );
-		glShaderSource( shader, 1, (const GLchar**) &s.source, NULL );
-		glCompileShader( shader );
+
+		GLuint shader = glCreateShader(s.type);
+		glShaderSource(shader, 1, (const GLchar**)&s.source, NULL);
+		glCompileShader(shader);
 
 		GLint  compiled;
-		glGetShaderiv( shader, GL_COMPILE_STATUS, &compiled );
-		if ( !compiled ) {
+		glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+		if (!compiled) {
 			std::cerr << s.filename << " failed to compile:" << std::endl;
 			GLint  logSize;
-			glGetShaderiv( shader, GL_INFO_LOG_LENGTH, &logSize );
+			glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
 			char* logMsg = new char[logSize];
-			glGetShaderInfoLog( shader, logSize, NULL, logMsg );
+			glGetShaderInfoLog(shader, logSize, NULL, logMsg);
 			std::cerr << logMsg << std::endl;
-			delete [] logMsg;
+			delete[] logMsg;
 
-			exit( EXIT_FAILURE );
+			exit(EXIT_FAILURE);
 		}
 
 		//delete [] s.source;
 
-		glAttachShader( program, shader );
+		glAttachShader(program, shader);
 	}
 
 	/* link  and error check */
 	glLinkProgram(program);
 
 	GLint  linked;
-	glGetProgramiv( program, GL_LINK_STATUS, &linked );
-	if ( !linked ) {
+	glGetProgramiv(program, GL_LINK_STATUS, &linked);
+	if (!linked) {
 		std::cerr << "Shader program failed to link" << std::endl;
 		GLint  logSize;
-		glGetProgramiv( program, GL_INFO_LOG_LENGTH, &logSize);
+		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logSize);
 		char* logMsg = new char[logSize];
-		glGetProgramInfoLog( program, logSize, NULL, logMsg );
+		glGetProgramInfoLog(program, logSize, NULL, logMsg);
 		std::cerr << logMsg << std::endl;
-		delete [] logMsg;
+		delete[] logMsg;
 
-		exit( EXIT_FAILURE );
-    }
+		exit(EXIT_FAILURE);
+	}
 
-    /* use program object */
-    glUseProgram(program);
+	/* use program object */
+	glUseProgram(program);
 
-    return program;
+	return program;
 }

@@ -14,8 +14,8 @@ public:
 	void SetLocalRotateMatrix(float rotate_x, float  rotate_y, float  rotate_z);
 	void SetWorldTranslateMatrix(float translate_x, float  translate_y, float  translate_z);
 	void SetWorldRotateMatrix(float rotate_x, float  rotate_y, float  rotate_z);
-	const glm::mat4x4& GetProjectionTransformation() const;
-	const glm::mat4x4& GetViewTransformation() const;
+	glm::mat4x4 GetProjectionTransformation() const;
+	glm::mat4x4 GetViewTransformation() const;
 	glm::vec3 GetWorldPos();
 	void Camera::set_perspective(float fov);
 	float GetzNear();

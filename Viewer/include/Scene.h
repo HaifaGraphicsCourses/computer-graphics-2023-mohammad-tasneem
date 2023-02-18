@@ -33,9 +33,6 @@ public:
 	void SetDrawCamera(bool flag);
 	bool GetDrawCamera()const;
 	void Scene::AddCameranew(const std::shared_ptr<Camera>& camera);
-	int is_colored = 1;
-	int getiscolored();
-	void setiscolored(int iscolored);
 
 	int GetLightCount() const;
 	Light& GetLight(int index);
@@ -43,14 +40,16 @@ public:
 	MeshModel& GetLightModel() const;
 	void SetActiveLightIndex(int index);
 	void AddLight(const std::shared_ptr<Light>& light);
-	bool gouraudShading = true;
-	bool& GetGouraudShading();
 	bool useAmbientLighting = true;
 	bool useDiffuseLighting = true;
 	bool useSpecularLighting = true;
 	bool& GetUseAmbientLighting();
 	bool& GetUseDiffuseLighting();
 	bool& GetUseSpecularLighting();
+	int& GetMappingType();
+	bool& GetUseToonShading();
+	glm::vec3& GetToonShadingColor();
+	int& GetToonShadingLevels();
 
 private:
 	std::vector<std::shared_ptr<MeshModel>> mesh_models_;
@@ -63,4 +62,8 @@ private:
 	int active_light_index_;
 
 	bool draw_camera = false;
+	int mappingType = 0;
+	bool useToonShading = false;
+	glm::vec3 toonShadingColor = glm::vec3(1.0, 0.8, 0.7);
+	int toonShadingLevels = 3;
 };
