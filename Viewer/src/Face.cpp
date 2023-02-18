@@ -2,10 +2,10 @@
 #include <istream>
 #include "Face.h"
 
-Face::Face(std::istream& issLine)
+Face::Face(std::istream& issLine) : normal(0, 0, 0)
 {
-	vertex_indices  = { 0,0,0 };
-	normal_indices  = { 0,0,0 };
+	vertex_indices = { 0,0,0 };
+	normal_indices = { 0,0,0 };
 	texture_indices = { 0,0,0 };
 
 	char c;
@@ -16,7 +16,7 @@ Face::Face(std::istream& issLine)
 		{
 			continue;
 		}
-		
+
 		issLine >> c >> std::ws;
 		if (issLine.peek() == '/')
 		{
@@ -29,7 +29,7 @@ Face::Face(std::istream& issLine)
 		{
 			continue;
 		}
-		
+
 		issLine >> c >> normal_indices.at(i);
 	}
 }
@@ -47,4 +47,9 @@ int Face::GetNormalIndex(int internal_index) const
 int Face::GetTextureIndex(int internal_index) const
 {
 	return texture_indices[internal_index];
+}
+
+glm::vec3& Face::GetNormal()
+{
+	return normal;
 }

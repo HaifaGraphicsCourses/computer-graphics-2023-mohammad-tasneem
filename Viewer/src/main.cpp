@@ -55,7 +55,8 @@ int main(int argc, char** argv)
 	glfwGetFramebufferSize(window, &frameBufferWidth, &frameBufferHeight);
 	aspect = (float)frameBufferWidth / frameBufferHeight;
 
-	Renderer renderer = Renderer(frameBufferWidth, frameBufferHeight);
+	Renderer renderer(frameBufferWidth, frameBufferHeight);
+	renderer.LoadTextures();
 	Scene scene = Scene();
 	std::string path = "..\\Data\\camera.obj";
 	std::shared_ptr<MeshModel> cam_model = Utils::LoadMeshModel(path);
@@ -63,12 +64,12 @@ int main(int argc, char** argv)
 	int id = scene.GetCameraCount();
 
 	// default camera
-	scene.AddCameranew(std::make_shared<Camera>(glm::vec3(0, 0, 2), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 1.0f));
+	scene.AddCameranew(std::make_shared<Camera>(glm::vec3(0, 0, 1), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 1.0f));
 	scene.GetActiveCamera().Setorth(true);
-	scene.GetActiveCamera().SetRight(2 * aspect);
-	scene.GetActiveCamera().SetLeft(-2 * aspect);
-	scene.GetActiveCamera().SetTop(2);
-	scene.GetActiveCamera().SetBottom(-2);
+	scene.GetActiveCamera().SetRight(aspect);
+	scene.GetActiveCamera().SetLeft(-aspect);
+	scene.GetActiveCamera().SetTop(1);
+	scene.GetActiveCamera().SetBottom(-1);
 	scene.GetActiveCamera().set_perspective(glm::radians(90.0f));
 	scene.GetActiveCamera().SetAspect(aspect);
 
@@ -102,7 +103,7 @@ GLFWwindow* SetupGlfwWindow(int w, int h, const char* window_name)
 	if (!glfwInit())
 		return NULL;
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 #if __APPLE__
@@ -144,15 +145,13 @@ void RenderFrame(GLFWwindow* window, Scene& scene, Renderer& renderer, ImGuiIO& 
 	int frameBufferWidth, frameBufferHeight;
 	glfwMakeContextCurrent(window);
 	glfwGetFramebufferSize(window, &frameBufferWidth, &frameBufferHeight);
-	if (frameBufferWidth != renderer.GetViewportWidth() || frameBufferHeight != renderer.GetViewportHeight())
-	{
-		Renderer renderer = Renderer(frameBufferWidth, frameBufferHeight);
-		glfwSetWindowAspectRatio(window, renderer.GetViewportWidth(), renderer.GetViewportHeight());
-	}
 
-	renderer.ClearColorBuffer(clear_color);
+	// Clear the screen and depth buffer
+	glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+
 	renderer.Render(scene);
-	renderer.SwapBuffers();
 
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	glfwMakeContextCurrent(window);
@@ -171,11 +170,6 @@ void Cleanup(GLFWwindow* window)
 
 void DrawImguiMenus(ImGuiIO& io, Scene& scene)
 {
-	/**
-	 * MeshViewer menu
-	 */
-	ImGui::Begin("MeshViewer Menu");
-
 	// Menu Bar
 	if (ImGui::BeginMainMenuBar())
 	{
@@ -206,12 +200,41 @@ void DrawImguiMenus(ImGuiIO& io, Scene& scene)
 		ImGui::EndMainMenuBar();
 	}
 
-	// Controls
-	ImGui::ColorEdit3("Clear Color", (float*)&clear_color);
+	/**
+	 * MeshViewer menu
+	 */
+	{
+		ImGui::Begin("MeshViewer Menu");
 
-	// TODO: Add more controls as needed
+		// Controls
+		ImGui::ColorEdit3("Clear Color", (float*)&clear_color);
 
-	ImGui::End();
+		// section for different mappings
+		if (ImGui::CollapsingHeader("Mapping type"))
+		{
+			// radio buttons for mapping type
+			ImGui::RadioButton("None", &scene.GetMappingType(), 0);
+			ImGui::RadioButton("Texture mapping (Plane)", &scene.GetMappingType(), 1);
+			ImGui::RadioButton("Texture mapping (Cylinder)", &scene.GetMappingType(), 2);
+			ImGui::RadioButton("Texture mapping (Sphere)", &scene.GetMappingType(), 3);
+			ImGui::RadioButton("Texture mapping (Coordinates)", &scene.GetMappingType(), 4);
+			ImGui::RadioButton("Normal mapping", &scene.GetMappingType(), 5);
+			ImGui::RadioButton("Environment mapping", &scene.GetMappingType(), 6);
+		}
+
+		// section for toon shading
+		if (ImGui::CollapsingHeader("Toon shading"))
+		{
+			ImGui::Checkbox("Enabled", &scene.GetUseToonShading());
+			ImGui::ColorEdit3("Color", (float*)&scene.GetToonShadingColor());
+			ImGui::SliderInt("Levels", &scene.GetToonShadingLevels(), 1, 5);
+		}
+
+		// TODO: Add more controls as needed
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+		ImGui::End();
+	}
 
 	/**
 	 * Imgui demo - you can remove it once you are familiar with imgui
@@ -239,10 +262,9 @@ void DrawImguiMenus(ImGuiIO& io, Scene& scene)
 		static float rotate_x = 0;
 		static float rotate_y = 0;
 		static float rotate_z = 0;
-		static bool colored = true;
 
 		if (scene.GetModelCount() > 0) {
-			MeshModel curr_mesh = scene.GetActiveModel();
+			const MeshModel& curr_mesh = scene.GetActiveModel();
 			if (slected_item_frame == 0)//local frame
 			{
 				translate_x = curr_mesh.local_translation[0];
@@ -270,8 +292,7 @@ void DrawImguiMenus(ImGuiIO& io, Scene& scene)
 
 		/////////////////////////////////// init main window///////////////////////////////////////
 
-		ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-		ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+		ImGui::Begin("Model Control Window");                          // Create a window called "Hello, world!" and append into it.
 
 		if (scene.GetModelCount())
 		{
@@ -283,7 +304,6 @@ void DrawImguiMenus(ImGuiIO& io, Scene& scene)
 
 
 				const char* items[] = { "local", "world" };
-				/*static const char* current_item = items[0];*/
 				if (ImGui::Combo("World/Local", &slected_item_frame, items, 2))
 				{
 					if (scene.GetModelCount() > 0 && slected_item_frame == 0)
@@ -461,42 +481,15 @@ void DrawImguiMenus(ImGuiIO& io, Scene& scene)
 						}
 					}
 				}
-
-				ImGui::Checkbox("faces BoundingBox", &scene.GetActiveModel().faces_bound);
-				if (ImGui::Checkbox("is_colored", &colored))
-				{
-					if (colored)
-					{
-						scene.setiscolored(1);
-					}
-					else
-					{
-						scene.setiscolored(0);
-					}
-				}
-				//	ImGui::Checkbox("Show axis ", &scene.GetActiveModel().show_axis);
-				/*	ImGui::Checkbox("Show box ", &scene.GetActiveModel().bounding_box);
-
-					if (ImGui::Checkbox("Faces Normals", &show_face_normals))
-					{
-						scene.GetActiveModel().SetShowFaceNormals(!scene.GetActiveModel().GetShowFaceNormals());
-					}
-					if (ImGui::Checkbox("vertices Normals", &show_vertex_normals))
-					{
-						scene.GetActiveModel().SetShowVertexNormals(!scene.GetActiveModel().GetShowVertexNormals());
-					}
-				*/
-
-				ImGui::Checkbox("light directions", &scene.GetActiveModel().GetShowLightDirections());
 			}
 
 			{// widgets for model materials
 				ImGui::ColorEdit3("ambient material", (float*)&scene.GetActiveModel().GetAmbient());
 				ImGui::ColorEdit3("diffuse material", (float*)&scene.GetActiveModel().GetDiffuse());
 				ImGui::ColorEdit3("specular material", (float*)&scene.GetActiveModel().GetSpecular());
+				ImGui::SliderFloat("specular shininess", &scene.GetActiveModel().GetShininess(), 1, 50);
 			}
 		}
-		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::End();
 
 	}
@@ -722,20 +715,11 @@ void DrawImguiMenus(ImGuiIO& io, Scene& scene)
 	{//light controls window
 		ImGui::Begin("Light Control Window");
 
-		// select flat or Gouraud shading
-		if (ImGui::RadioButton("Flat shading", !scene.GetGouraudShading()))
-			scene.GetGouraudShading() = false;
-		ImGui::SameLine();
-		if (ImGui::RadioButton("Gouraud shading", scene.GetGouraudShading()))
-			scene.GetGouraudShading() = true;
-		ImGui::Separator();
-
 		// enable/disable light components
 		ImGui::Checkbox("Use ambient lighting", &scene.GetUseAmbientLighting());
 		ImGui::Checkbox("Use diffuse lighting", &scene.GetUseDiffuseLighting());
 		ImGui::Checkbox("Use specular lighting", &scene.GetUseSpecularLighting());
 		ImGui::Separator();
-
 
 		// slider for selecting current light
 		static int light_index = 1;
@@ -752,17 +736,19 @@ void DrawImguiMenus(ImGuiIO& io, Scene& scene)
 			scene.AddLight(std::make_shared<Light>());
 		}
 
-		if (scene.GetLightCount())
+		if (scene.GetLightCount() > 0)
 		{
-			// sliders for light position
-			ImGui::SliderFloat("position x", &scene.GetActiveLight().GetPosition().x, -4, 4);
-			ImGui::SliderFloat("position y", &scene.GetActiveLight().GetPosition().y, -4, 4);
-			ImGui::SliderFloat("position z", &scene.GetActiveLight().GetPosition().z, -4, 4);
+			Light& light = scene.GetActiveLight();
 
-			// widgets for light colors
-			ImGui::ColorEdit3("ambient reflection", (float*)&scene.GetActiveLight().GetAmbient());
-			ImGui::ColorEdit3("diffuse reflection", (float*)&scene.GetActiveLight().GetDiffuse());
-			ImGui::ColorEdit3("specular reflection", (float*)&scene.GetActiveLight().GetSpecular());
+			// sliders for light position
+			ImGui::SliderFloat("position x", &light.GetPosition().x, -4, 4);
+			ImGui::SliderFloat("position y", &light.GetPosition().y, -4, 4);
+			ImGui::SliderFloat("position z", &light.GetPosition().z, -4, 4);
+
+			// editors for light colors
+			ImGui::ColorEdit3("ambient intensity", (float*)&light.GetAmbient());
+			ImGui::ColorEdit3("diffuse intensity", (float*)&light.GetDiffuse());
+			ImGui::ColorEdit3("specular intensity", (float*)&light.GetSpecular());
 		}
 
 		ImGui::End();

@@ -38,23 +38,18 @@ Camera::~Camera()
 
 }
 
-const glm::mat4x4& Camera::GetProjectionTransformation() const
+glm::mat4x4 Camera::GetProjectionTransformation() const
 {
-	return projection_transformation;
+	if (is_orth)
+		return glm::ortho(left, right, bottom, top, zNear, zFar);
+	else
+		return glm::perspective(fovy, aspect, zNear, zFar);
 }
 
-const glm::mat4x4& Camera::GetViewTransformation() const
+glm::mat4x4 Camera::GetViewTransformation() const
 {
-	glm::mat4x4 localTrans = translate_mat_loc * rotation_mat_locX * rotation_mat_locY * rotation_mat_locZ;
-	glm::mat4x4 worldTrans = translate_mat_wor * rotation_mat_worX * rotation_mat_worY * rotation_mat_worZ;
 	glm::mat4x4 lookat = glm::lookAt(eye, at, up);
-	glm::mat4x4 ortho = glm::ortho(left, right, bottom, top, zNear, zFar);
-	glm::mat4x4 pers = glm::perspective(fovy, aspect, zNear, zFar);
-	/*glm::mat4x4 pers = glm::frustum(left, right, bottom, top, zNear, zFar);*/
-	if (is_orth)
-		return ortho * lookat * inversemat;
-	else
-		return pers * lookat * inversemat;
+	return lookat * inversemat;
 }
 
 glm::vec3 Camera::GetWorldPos()

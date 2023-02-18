@@ -1,17 +1,117 @@
 #include "MeshModel.h"
 #define M_PI        3.14159265358979323846264338327950288
-MeshModel::MeshModel(std::vector<Face> faces, std::vector<glm::vec3> vertices, std::vector<glm::vec3> normals, const std::string& model_name) :
+MeshModel::MeshModel(std::vector<Face> faces, std::vector<glm::vec3> vertices, std::vector<glm::vec3> normals, std::vector<glm::vec2> textureCoords, const std::string& model_name) :
 	faces_(faces),
 	vertices_(vertices),
 	normals_(normals),
+	textureCoords_(textureCoords),
 	model_name_(model_name),
 	color(glm::vec3(1, 1, 1)),
 	ambient(1, 1, 1),
 	diffuse(1, 1, 1),
-	specular(1, 1, 1)
+	specular(1, 1, 1),
+	shininess(16)
 {
 	scaleLoadedMeshModel();
 	setBoundingBox();
+
+	modelVertices.reserve(3 * faces_.size());
+	for (int i = 0; i < faces_.size(); i++)
+	{
+		Face currentFace = faces_.at(i);
+
+		// calculate tangent and bitangent vectors for normal mapping
+		// (based on https://learnopengl.com/Advanced-Lighting/Normal-Mapping)
+		glm::vec3 tangent = glm::vec3(0);
+		glm::vec3 bitangent = glm::vec3(0);
+		if (vertices_.size() > 0 && textureCoords_.size() > 0)
+		{
+			// positions of face vertices
+			glm::vec3 pos1 = vertices_[currentFace.GetVertexIndex(0) - 1];
+			glm::vec3 pos2 = vertices_[currentFace.GetVertexIndex(1) - 1];
+			glm::vec3 pos3 = vertices_[currentFace.GetVertexIndex(2) - 1];
+
+			// texture coordinates of face vertices
+			glm::vec2 uv1 = textureCoords_[currentFace.GetTextureIndex(0) - 1];
+			glm::vec2 uv2 = textureCoords_[currentFace.GetTextureIndex(1) - 1];
+			glm::vec2 uv3 = textureCoords_[currentFace.GetTextureIndex(2) - 1];
+
+			// edge vectors
+			glm::vec3 edge1 = pos2 - pos1;
+			glm::vec3 edge2 = pos3 - pos1;
+			glm::vec2 deltaUV1 = uv2 - uv1;
+			glm::vec2 deltaUV2 = uv3 - uv1;
+
+			// tangent and bitangent vectors
+			float det = deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y;
+			tangent = (deltaUV2.y * edge1 - deltaUV1.y * edge2) / det;
+			bitangent = (-deltaUV2.x * edge1 + deltaUV1.x * edge2) / det;
+		}
+
+		for (int j = 0; j < 3; j++)
+		{
+			Vertex vertex;
+			vertex.position = glm::vec3(0);
+			vertex.normal = glm::vec3(0);
+			vertex.tangent = tangent;
+			vertex.bitangent = bitangent;
+			vertex.textureCoords = glm::vec3(0);
+
+			if (vertices_.size() > 0)
+			{
+				int vertexIndex = currentFace.GetVertexIndex(j) - 1;
+				vertex.position = vertices_[vertexIndex];
+			}
+
+			if (normals_.size() > 0)
+			{
+				int normalIndex = currentFace.GetNormalIndex(j) - 1;
+				vertex.normal = normals_[normalIndex];
+			}
+
+			if (textureCoords_.size() > 0)
+			{
+				int textureCoordsIndex = currentFace.GetTextureIndex(j) - 1;
+				vertex.textureCoords = textureCoords_[textureCoordsIndex];
+			}
+
+			modelVertices.push_back(vertex);
+		}
+	}
+
+	// load the mesh on the GPU
+	if (modelVertices.size() > 0)
+	{
+		glGenVertexArrays(1, &vao);
+		glGenBuffers(1, &vbo);
+
+		glBindVertexArray(vao);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, modelVertices.size() * sizeof(Vertex), &modelVertices[0], GL_STATIC_DRAW);
+
+		// Vertex Positions
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)0);
+		glEnableVertexAttribArray(0);
+
+		// Normal vectors
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(3 * sizeof(GLfloat)));
+		glEnableVertexAttribArray(1);
+
+		// Tangent vectors
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(6 * sizeof(GLfloat)));
+		glEnableVertexAttribArray(2);
+
+		// Bitangent vectors
+		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(9 * sizeof(GLfloat)));
+		glEnableVertexAttribArray(3);
+
+		// Vertex Texture Coords
+		glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(12 * sizeof(GLfloat)));
+		glEnableVertexAttribArray(4);
+
+		// unbind to make sure other code does not change it somewhere else
+		glBindVertexArray(0);
+	}
 }
 
 MeshModel::~MeshModel()
@@ -25,7 +125,7 @@ const Face& MeshModel::GetFace(int index) const
 
 int MeshModel::GetFacesCount() const
 {
-	return faces_.size();
+	return (int)faces_.size();
 }
 const std::vector<Face> MeshModel::GetFacesList()const
 {
@@ -62,6 +162,9 @@ void MeshModel::SetWorldLocal(bool flag)
 }
 void MeshModel::scaleLoadedMeshModel()
 {
+	if (vertices_.empty())
+		return;
+
 	float
 		xMin = vertices_[0].x,
 		xMax = vertices_[0].x,
@@ -80,9 +183,9 @@ void MeshModel::scaleLoadedMeshModel()
 		zMin = glm::min(vertices_[i].z, zMin);
 		zMax = glm::max(vertices_[i].z, zMax);
 	}
-	float xMid = (xMax + xMin) / 2.0;
-	float yMid = (yMax + yMin) / 2.0;
-	float zMid = (zMax + zMin) / 2.0;
+	float xMid = (xMax + xMin) / 2.0f;
+	float yMid = (yMax + yMin) / 2.0f;
+	float zMid = (zMax + zMin) / 2.0f;
 
 	float xScale = xMax - xMin;
 	float yScale = yMax - yMin;
@@ -188,6 +291,9 @@ glm::mat4x4 MeshModel::Z_RotationMatrix(glm::vec3 v)
 }
 void MeshModel::setBoundingBox()
 {
+	if (vertices_.empty())
+		return;
+
 	float min_x, max_x, min_y, max_y, min_z, max_z;
 	min_x = vertices_[0].x; max_x = vertices_[0].x;
 	min_y = vertices_[0].y; max_y = vertices_[0].y;
@@ -253,10 +359,6 @@ void MeshModel::SetShowVertexNormals(bool flag)
 bool MeshModel::GetShowVertexNormals()
 {
 	return this->show_vertex_normals;
-}
-bool& MeshModel::GetShowLightDirections()
-{
-	return show_light_directions;
 }
 glm::vec3 MeshModel::GetNormal(int index)
 {
@@ -365,11 +467,6 @@ void MeshModel::setNormals()
 	return;
 }
 
-bool& MeshModel::GetFacesBound()
-{
-	return faces_bound;
-}
-
 glm::vec3& MeshModel::GetAmbient()
 {
 	return ambient;
@@ -383,4 +480,14 @@ glm::vec3& MeshModel::GetDiffuse()
 glm::vec3& MeshModel::GetSpecular()
 {
 	return specular;
+}
+
+float& MeshModel::GetShininess()
+{
+	return shininess;
+}
+
+GLuint MeshModel::GetVAO() const
+{
+	return vao;
 }

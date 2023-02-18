@@ -1,12 +1,22 @@
 #pragma once
+#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <string>
 #include "Face.h"
 
+struct Vertex
+{
+	glm::vec3 position;
+	glm::vec3 normal;
+	glm::vec3 tangent;
+	glm::vec3 bitangent;
+	glm::vec2 textureCoords;
+};
+
 class MeshModel
 {
 public:
-	MeshModel(std::vector<Face> faces, std::vector<glm::vec3> vertices, std::vector<glm::vec3> normals, const std::string& model_name);
+	MeshModel(std::vector<Face> faces, std::vector<glm::vec3> vertices, std::vector<glm::vec3> normals, std::vector<glm::vec2> textureCoords, const std::string& model_name);
 	virtual ~MeshModel();
 	glm::vec3 color = glm::vec3(0, 0, 1);
 	int GetFacesCount() const;
@@ -51,7 +61,6 @@ public:
 	bool GetShowFaceNormals();
 	void SetShowVertexNormals(bool flag);
 	bool GetShowVertexNormals();
-	bool& GetShowLightDirections();
 	glm::vec3 GetNormal(int index);
 
 
@@ -71,7 +80,9 @@ public:
 	std::vector<Face> faces_;
 	std::vector<glm::vec3> vertices_;
 	std::vector<glm::vec3> normals_;
+	std::vector<glm::vec2> textureCoords_;
 	std::string model_name_;
+	std::vector<Vertex> modelVertices;
 
 	////////////////////////////// part 3 ////////////////////////////////////
 	float min_x;
@@ -117,8 +128,6 @@ public:
 	bool show_light_directions = false;
 
 	//////////////////////////////// part 4 ///////////////////////
-	bool faces_bound = false;
-	bool& GetFacesBound();
 	void setNormals();
 	std::vector<glm::vec3> verticesNormals;
 	std::vector<glm::vec3> facesCenters;
@@ -127,10 +136,18 @@ public:
 	glm::vec3& GetAmbient();
 	glm::vec3& GetDiffuse();
 	glm::vec3& GetSpecular();
+	float& GetShininess();
+
+	GLuint GetVAO() const;
 
 private:
 	// material
 	glm::vec3 ambient;
 	glm::vec3 diffuse;
 	glm::vec3 specular;
+	float shininess;
+
+	// GPU data
+	GLuint vbo;
+	GLuint vao;
 };

@@ -24,25 +24,25 @@ void Scene::AddModel(const std::shared_ptr<MeshModel>& mesh_model)
 	// default materials for 1st model (blue)
 	if (mesh_models_.size() == 1)
 	{
-		glm::vec3 color(0.5f, 0.5f, 1.0f);
+		glm::vec3 color(0.2f, 0.4f, 0.6f);
 		mesh_models_.back()->GetAmbient() = color;
 		mesh_models_.back()->GetDiffuse() = color;
-		mesh_models_.back()->GetSpecular() = color;
+		mesh_models_.back()->GetSpecular() = glm::vec3(1);
 	}
 
 	// default materials for 2nd model (green)
 	if (mesh_models_.size() == 2)
 	{
-		glm::vec3 color(0.5f, 1.0f, 0.5f);
+		glm::vec3 color(0.4f, 0.6f, 0.4f);
 		mesh_models_.back()->GetAmbient() = color;
 		mesh_models_.back()->GetDiffuse() = color;
-		mesh_models_.back()->GetSpecular() = color;
+		mesh_models_.back()->GetSpecular() = glm::vec3(1);
 	}
 }
 
 int Scene::GetModelCount() const
 {
-	return mesh_models_.size();
+	return (int)mesh_models_.size();
 }
 
 MeshModel& Scene::GetModel(int index) const
@@ -68,7 +68,7 @@ void Scene::AddCameranew(const std::shared_ptr<Camera>& camera)
 
 int Scene::GetCameraCount() const
 {
-	return cameras_.size();
+	return (int)cameras_.size();
 }
 
 Camera& Scene::GetCamera(int index)
@@ -113,18 +113,10 @@ MeshModel& Scene::GetCameraMesh() const
 {
 	return *this->camera_model;
 }
-int Scene::getiscolored()
-{
-	return this->is_colored;
-}
-void Scene::setiscolored(int iscolored)
-{
-	this->is_colored = iscolored;
-}
 
 int Scene::GetLightCount() const
 {
-	return lights_.size();
+	return (int)lights_.size();
 }
 
 Light& Scene::GetLight(int index)
@@ -154,9 +146,9 @@ void Scene::AddLight(const std::shared_ptr<Light>& light)
 	// default properties for 1st light (red)
 	if (lights_.size() == 1)
 	{
-		lights_.back()->GetPosition() = glm::vec3(-1, 1, 0);
-		glm::vec3 color(1.0f, 0.5f, 0.5f);
-		lights_.back()->GetAmbient() = color * 0.5f;
+		lights_.back()->GetPosition() = glm::vec3(-0.8f, 0.8f, 0.8f);
+		glm::vec3 color(1.0f, 0.6f, 0.6f);
+		lights_.back()->GetAmbient() = color * 1.0f;
 		lights_.back()->GetDiffuse() = color * 1.0f;
 		lights_.back()->GetSpecular() = glm::vec3(1, 1, 1);
 	}
@@ -164,17 +156,12 @@ void Scene::AddLight(const std::shared_ptr<Light>& light)
 	// default properties for 2nd light (yellow)
 	if (lights_.size() == 2)
 	{
-		lights_.back()->GetPosition() = glm::vec3(1, 1, 0);
-		glm::vec3 color(1.0f, 1.0f, 0.5f);
-		lights_.back()->GetAmbient() = color * 0.5f;
+		lights_.back()->GetPosition() = glm::vec3(0.8f, 0.8f, 0.8f);
+		glm::vec3 color(1.0f, 1.0f, 0.6f);
+		lights_.back()->GetAmbient() = color * 1.0f;
 		lights_.back()->GetDiffuse() = color * 1.0f;
 		lights_.back()->GetSpecular() = glm::vec3(1, 1, 1);
 	}
-}
-
-bool& Scene::GetGouraudShading()
-{
-	return gouraudShading;
 }
 
 bool& Scene::GetUseAmbientLighting()
@@ -190,4 +177,24 @@ bool& Scene::GetUseDiffuseLighting()
 bool& Scene::GetUseSpecularLighting()
 {
 	return useSpecularLighting;
+}
+
+int& Scene::GetMappingType()
+{
+	return mappingType;
+}
+
+bool& Scene::GetUseToonShading()
+{
+	return useToonShading;
+}
+
+glm::vec3& Scene::GetToonShadingColor()
+{
+	return toonShadingColor;
+}
+
+int& Scene::GetToonShadingLevels()
+{
+	return toonShadingLevels;
 }
