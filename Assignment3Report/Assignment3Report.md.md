@@ -367,32 +367,32 @@ void Renderer::Render(Scene& scene)
 ## 6.Phong Shading 
 
 with one light
-![](Part6_LargeMesh_1Light.PNG)
+![enter image description here](Part6_LargeMesh_1Light.PNG)
 
 
 with two lights
-![](Part6_LargeMesh_2Lights.PNG)
+![enter image description here](Part6_LargeMesh_2Lights.PNG)
 
 
 ## 7.Texture mapping
 
-![](Part7_TextureMapping_Coordinates.PNG)
+![enter image description here](Part7_TextureMapping_Coordinates.PNG)
 
-![](Part7_TextureMapping_Cylinder.gif)
+![enter image description here](Part7_TextureMapping_Cylinder.gif)
 
-![](Part7_TextureMapping_Plane.PNG)
+![enter image description here](Part7_TextureMapping_Plane.PNG)
 
-![](Part7_TextureMapping_Sphere.PNG)
+![enter image description here](Part7_TextureMapping_Sphere.PNG)
 
 ## 8.ToonShading,NormalMapping,EnvironmentMapping
 
 ** Normal Mapping**
 
-![](Part8_NormalMapping.PNG)
+![enter image description here](Part8_NormalMapping.PNG)
 
 ** Enviroment Mapping**
-![](Part8_EnvironmenMapping.PNG)
+![enter image description here](Part8_EnvironmenMapping.PNG)
 
 ** Toon Shading **
 
-![](Part8_ToonShading.PNG)
+![enter image description here](Part8_ToonShading.PNG)
