@@ -367,32 +367,37 @@ void Renderer::Render(Scene& scene)
 ## 6.Phong Shading 
 
 with one light
-![enter image description here](Part6_LargeMesh_1Light.PNG)
+
+![Part6_LargeMesh_1Light](https://user-images.githubusercontent.com/82311533/221669175-ae2d791a-fed5-4154-a4e2-f0dc78391751.png)
 
 
 with two lights
-![enter image description here](Part6_LargeMesh_2Lights.PNG)
+
+![Part6_LargeMesh_2Lights](https://user-images.githubusercontent.com/82311533/221669222-63110715-5099-4891-a409-a14b6801bb89.png)
 
 
 ## 7.Texture mapping
 
-![enter image description here](Part7_TextureMapping_Coordinates.PNG)
 
-![enter image description here](Part7_TextureMapping_Cylinder.gif)
+![Part7_TextureMapping_Coordinates](https://user-images.githubusercontent.com/82311533/221669295-a87e97e2-d9e3-422b-b604-c424ff81d821.png)
 
-![enter image description here](Part7_TextureMapping_Plane.PNG)
+![Part7_TextureMapping_Cylinder](https://user-images.githubusercontent.com/82311533/221669364-af75ea90-2ce4-49a5-a435-b4dbbbe05e1e.png)
 
-![enter image description here](Part7_TextureMapping_Sphere.PNG)
+![Part7_TextureMapping_Plane](https://user-images.githubusercontent.com/82311533/221669422-4c2eee7f-a3a2-4ed5-afcb-9005747978f3.png)
+
+![Part7_TextureMapping_Sphere](https://user-images.githubusercontent.com/82311533/221669476-ed12aec1-7d27-4fb5-bd90-9daba00b9b44.png)
+
 
 ## 8.ToonShading,NormalMapping,EnvironmentMapping
 
 ** Normal Mapping**
 
-![enter image description here](Part8_NormalMapping.PNG)
+
+![Part8_NormalMapping](https://user-images.githubusercontent.com/82311533/221669640-324a1f2e-8620-4234-b6d9-2e5d783140fc.png)
 
 ** Enviroment Mapping**
-![enter image description here](Part8_EnvironmenMapping.PNG)
+![Part8_EnvironmenMapping](https://user-images.githubusercontent.com/82311533/221669731-461bf17e-9029-47c2-8eb7-4af9ad9ba3aa.png)
 
 ** Toon Shading **
 
-![enter image description here](Part8_ToonShading.PNG)
+![Part8_ToonShading](https://user-images.githubusercontent.com/82311533/221669782-60f0e80e-55e4-49c7-afe3-c0ce396decca.png)
